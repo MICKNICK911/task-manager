@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Task Manager</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✅ My Task Manager</h1>
+            <p>Simple full-stack app with Firebase & Netlify</p>
+        </header>
+
+        <div class="add-task-section">
+            <form id="task-form">
+                <input 
+                    type="text" 
+                    id="task-input" 
+                    placeholder="What needs to be done?" 
+                    required
+                >
+                <button type="submit">Add Task</button>
+            </form>
+        </div>
+
+        <div class="tasks-section">
+            <h2>Your Tasks</h2>
+            <div id="tasks-container">
+                <!-- Tasks will be loaded here -->
+                <div class="loading">Loading tasks...</div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Built with Firebase + Netlify | Full-Stack Made Easy</p>
+        </footer>
+    </div>
+
+    <!-- Include Firebase config first -->
+    <script src="firebase.js"></script>
+    <!-- Then include our app logic -->
+    <script src="script.js"></script>
+</body>
+</html>
