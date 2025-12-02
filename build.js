@@ -15,7 +15,7 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const database = firebase.database();
 window.auth = auth;
-window.database = database;
+window.db = database;
 `;
 fs.writeFileSync('firebase-config.js', configContent);
 console.log('firebase-config.js generated from environment variables.');// we are here
