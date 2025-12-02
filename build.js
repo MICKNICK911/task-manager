@@ -18,4 +18,4 @@ window.auth = auth;
 window.database = database;
 `;
 fs.writeFileSync('firebase-config.js', configContent);
-console.log('firebase-config.js generated from environment variables.');
+console.log('firebase-config.js generated from environment variables.');// we are here
