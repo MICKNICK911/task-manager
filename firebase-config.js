@@ -49,4 +49,4 @@ const database = firebase.database();  // Realtime Database service
 
 // Make services available globally
 window.auth = auth;
-window.db = database;
+window.database = database;
