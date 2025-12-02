@@ -1,5 +1,5 @@
 // Firebase configuration - Replace with your actual config from Firebase Console
-/*const firebaseConfig = {
+const firebaseConfig = {
  apiKey: "AIzaSyBIuRj51fQUCNREMT3JEZAyWjl7TsBU_08",
  authDomain: "my-task-manager-c8e32.firebaseapp.com",
  databaseURL: "https://my-task-manager-c8e32-default-rtdb.firebaseio.com",
@@ -7,19 +7,7 @@
  storageBucket: "my-task-manager-c8e32.firebasestorage.app",
  messagingSenderId: "182865686068",
  appId: "1:182865686068:web:ef8716eb8edcc7749c6461"
-};*/
-
-const firebaseConfig = {
-        apiKey: process.env.FIREBASE_API_KEY,
-        authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-        databaseURL: process.env.FIREBASE_DATABASE_URL,
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.FIREBASE_APP_ID
 };
-
-
 
 // Initialize Firebase
 /*firebase.initializeApp(firebaseConfig);
