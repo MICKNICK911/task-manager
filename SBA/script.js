@@ -569,7 +569,7 @@ class StudentResultsManager {
                             if (this.tables.length > 0) {
                                 this.saveToFirebase();
                             }
-                        }, 2000);
+                        }, 60000);
                     }
                 }
             }
