@@ -1,0 +1,79 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Notes</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header with User Info -->
+    <header class="app-header">
+        <div class="header-content">
+            <h1><i class="fas fa-sticky-note"></i> My Notes</h1>
+            <div class="user-info">
+                <span id="user-email">Loading...</span>
+                <button onclick="logoutUser()" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+    
+    <main class="app-container">
+        <!-- Note Creation Form -->
+        <div class="note-creator">
+            <div class="form-group">
+                <input type="text" id="note-title" placeholder="Note Title" maxlength="100">
+            </div>
+            <div class="form-group">
+                <textarea id="note-content" placeholder="Start writing your note here..." rows="4"></textarea>
+            </div>
+            <div class="form-actions">
+                <button onclick="addNote()" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Note
+                </button>
+                <button onclick="clearForm()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+            <div id="form-error" class="error-message"></div>
+        </div>
+        
+        <!-- Notes Filter/Search -->
+        <div class="notes-filter">
+            <input type="text" id="search-notes" placeholder="Search notes..." onkeyup="filterNotes()">
+            <div class="filter-options">
+                <span id="notes-count">0 notes</span>
+                <select id="sort-notes" onchange="loadNotes()">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="title">By Title</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Notes Display Area -->
+        <div id="notes-container" class="notes-grid">
+            <!-- Notes will be dynamically inserted here -->
+            <div class="loading">Loading your notes...</div>
+        </div>
+    </main>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Auth Logic -->
+    <script src="auth.js"></script>
+    
+    <!-- Main App Logic -->
+    <script src="app.js"></script>
+</body>
+</html>
