@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (todoInput) todoInput.focus();
     }
     
-    console.log('Todo App with Import/Export Initialized Successfully');
+    alert('Todo App with Import/Export Initialized Successfully');
 });
 
 // Reinitialize import/export when user logs in
@@ -46,9 +46,6 @@ if (typeof AuthManager !== 'undefined') {
             }
         }, 1000);
         
-        setTimeout(() => {
-    alert('Export button:', document.getElementById('exportBtn'));
-    alert('Import button:', document.getElementById('importBtn'));
-}, 2000);
+        
     };
 }
