@@ -585,8 +585,7 @@ const ImportExportManager = {
         const errorElement = document.getElementById('importError');
         errorElement.textContent = '';
         errorElement.classList.remove('show');
-    },
-
+    }
     // Add this method to TodoManager for adding todos with completion status
     // We'll update the TodoManager.addTodo method in todos.js
 };
