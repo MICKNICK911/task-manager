@@ -24,7 +24,7 @@ const ImportExportManager = {
             if (event.target.id === 'exportBtn' || event.target.closest('#exportBtn')) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('Export button clicked');
+                alert('Export button clicked');
                 this.openModal('export');
             }
             
@@ -32,7 +32,7 @@ const ImportExportManager = {
             if (event.target.id === 'importBtn' || event.target.closest('#importBtn')) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('Import button clicked');
+                alert('Import button clicked');
                 this.openModal('import');
             }
             
