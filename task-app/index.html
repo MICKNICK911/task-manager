@@ -60,17 +60,27 @@
         
         <!-- Main App Section -->
         <div id="appContainer" class="app-container">
-            <header>
-                <div class="header-content">
-                    <h1>My Secure Todo List</h1>
-                    <p>Stay organized and productive</p>
-                </div>
-                
-                <div class="user-info">
-                    <span class="user-email" id="userEmail"></span>
-                    <button id="logoutBtn" class="logout-btn">Logout</button>
-                </div>
-            </header>
+<header>
+    <div class="header-content">
+        <h1>My Secure Todo List</h1>
+        <p>Stay organized and productive</p>
+    </div>
+    
+    <div class="user-info">
+        <span class="user-email" id="userEmail"></span>
+        <!-- Add Import/Export buttons -->
+        <div class="import-export-buttons">
+            <button id="exportBtn" class="import-export-btn" title="Export Todos">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button id="importBtn" class="import-export-btn" title="Import Todos">
+                <i class="fas fa-upload"></i> Import
+            </button>
+            <input type="file" id="importFile" accept=".json" style="display: none;">
+        </div>
+        <button id="logoutBtn" class="logout-btn">Logout</button>
+    </div>
+</header>
             
             <main>
                 <form class="todo-form" id="todoForm">

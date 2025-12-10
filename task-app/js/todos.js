@@ -48,21 +48,22 @@ const TodoManager = {
     },
 
     // Add a new todo
-    addTodo(text) {
-        if (!this.todosRef) return;
-        
-        this.todosRef.add({
-            text: text,
-            completed: false,
-            createdAt: FieldValue.serverTimestamp(),
-            updatedAt: FieldValue.serverTimestamp()
-        }).then(() => {
-            UIManager.showNotification('Task added successfully', 'success');
-        }).catch((error) => {
-            console.error("Error adding todo: ", error);
-            UIManager.showNotification('Error adding task', 'error');
-        });
-    },
+    // Update the addTodo method in js/todos.js to accept completion status:
+addTodo(text, completed = false) {
+    if (!this.todosRef) return;
+    
+    this.todosRef.add({
+        text: text,
+        completed: completed,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp()
+    }).then(() => {
+        UIManager.showNotification('Task added successfully', 'success');
+    }).catch((error) => {
+        console.error("Error adding todo: ", error);
+        UIManager.showNotification('Error adding task', 'error');
+    });
+},
 
     // Update todo text
     updateTodo(id, newText) {

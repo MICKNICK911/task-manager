@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize managers
     AuthManager.init();
     UIManager.init();
+    ImportExportManager.init();  // Add this line
     
     // Check if user is already logged in
     const user = auth.currentUser;
@@ -15,5 +16,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Log initialization
-    console.log('Todo App Initialized Successfully');
+    console.log('Todo App with Import/Export Initialized Successfully');
 });
