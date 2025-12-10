@@ -48,11 +48,6 @@ const TodoManager = {
     },
 
     // Add a new todo
-    // Update the addTodo method in js/todos.js to accept completion status:
-const TodoManager = {
-    // ... existing properties ...
-    
-    // Add a new todo with optional completed status
     addTodo(text, completed = false) {
         if (!this.todosRef) {
             console.error('Todos reference not initialized');
