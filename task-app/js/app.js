@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize ImportExportManager after a short delay to ensure DOM is ready
     setTimeout(() => {
         ImportExportManager.init();
-        console.log('Import/Export Manager initialized');
+        alert('Import/Export Manager initialized');
     }, 500);
     
     // Check if user is already logged in
