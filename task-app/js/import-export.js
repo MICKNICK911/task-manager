@@ -14,7 +14,7 @@ const ImportExportManager = {
         this.setupDragAndDrop();
         this.isInitialized = true;
         
-        console.log('Import/Export Manager initialized');
+        alert('Import/Export Manager initialized');
     },
 
     // Setup event listeners

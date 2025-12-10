@@ -45,5 +45,10 @@ if (typeof AuthManager !== 'undefined') {
                 console.log('Reinitialized Import/Export for logged in user');
             }
         }, 1000);
+        
+        setTimeout(() => {
+    console.log('Export button:', document.getElementById('exportBtn'));
+    console.log('Import button:', document.getElementById('importBtn'));
+}, 2000);
     };
 }
