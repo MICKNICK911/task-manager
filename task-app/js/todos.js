@@ -48,31 +48,21 @@ const TodoManager = {
     },
 
     // Add a new todo
-    // In todos.js, update the addTodo method:
-addTodo(text, completed = false) {
-    if (!this.todosRef) {
-        console.error('No todos reference');
-        return Promise.resolve(false);
-    }
-    
-    return this.todosRef.add({
-        text: text,
-        completed: completed,
-        createdAt: FieldValue.serverTimestamp(),
-        updatedAt: FieldValue.serverTimestamp()
-    }).then(() => {
-        if (UIManager && UIManager.showNotification) {
-            UIManager.showNotification('Task added', 'success');
-        }
-        return true;
-    }).catch((error) => {
-        console.error("Error adding todo:", error);
-        if (UIManager && UIManager.showNotification) {
+    addTodo(text) {
+        if (!this.todosRef) return;
+        
+        this.todosRef.add({
+            text: text,
+            completed: false,
+            createdAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp()
+        }).then(() => {
+            UIManager.showNotification('Task added successfully', 'success');
+        }).catch((error) => {
+            console.error("Error adding todo: ", error);
             UIManager.showNotification('Error adding task', 'error');
-        }
-        return false;
-    });
-},
+        });
+    },
 
     // Update todo text
     updateTodo(id, newText) {
