@@ -47,8 +47,8 @@ if (typeof AuthManager !== 'undefined') {
         }, 1000);
         
         setTimeout(() => {
-    console.log('Export button:', document.getElementById('exportBtn'));
-    console.log('Import button:', document.getElementById('importBtn'));
+    alert('Export button:', document.getElementById('exportBtn'));
+    alert('Import button:', document.getElementById('importBtn'));
 }, 2000);
     };
 }
