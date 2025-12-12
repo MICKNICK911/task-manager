@@ -1,7 +1,36 @@
 [build]
+  # Netlify will serve files from the root directory
   publish = "."
+  # No build command needed for static files
+  command = ""
 
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "18"
+
+# Redirect all requests to our index.html (for Single Page Application)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Proxy API requests to our serverless function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/todos"
+  status = 200
+
+# Function configuration
+[functions]
+  # Directory containing our serverless functions
+  directory = "api"
+  
+# Required for Neon database connection
+[context.production.environment]
+  DATABASE_URL = "postgresql://neondb_owner:npg_HAjPxm4nCN5G@ep-soft-glitter-aee840od-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+[context.deploy-preview.environment]
+  DATABASE_URL = "postgresql://neondb_owner:npg_HAjPxm4nCN5G@ep-soft-glitter-aee840od-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+[context.branch-deploy.environment]
+  DATABASE_URL = "postgresql://neondb_owner:npg_HAjPxm4nCN5G@ep-soft-glitter-aee840od-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
