@@ -1,0 +1,25 @@
+body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: lightgray;
+        }
+        
+.container {
+    text-align: center;
+}
+
+.box {
+    width: 200px;
+    height: 200px;
+    background: blue;
+    margin: 20px auto;
+    border: 2px solid black;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
