@@ -1,0 +1,32 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: rgb(117, 250, 115);
+}
+
+.container {
+    height: 300px;
+    width: 300px;
+    background-color: red;
+}
+.container2 {
+    height: 300px;
+    width: 300px;
+    background-color: rgb(0, 255, 13);
+}
+
+.hide {
+    display: none;
+}
+
+.show {
+    display: flex;
+}

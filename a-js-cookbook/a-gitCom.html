@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Commands Reference - Complete Cheat Sheet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #2ecc71;
+            --light-color: #ecf0f1;
+            --dark-color: #1a252f;
+            --code-bg: #1e1e1e;
+            --card-bg: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .category-filter {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .category-btn.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(550px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .commands-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .command-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .command-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .command-code {
+            background-color: var(--code-bg);
+            color: #e0e0e0;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow-x: auto;
+            margin-bottom: 12px;
+            border: 1px solid #3c3c3c;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+
+        .command-code:hover {
+            background-color: #252525;
+        }
+
+        .command-code::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .command-code::-webkit-scrollbar-track {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+
+        .command-code::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
+        }
+
+        .command-purpose {
+            color: #555;
+            font-size: 0.95rem;
+            padding-left: 8px;
+            border-left: 3px solid #eee;
+        }
+
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .copy-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .copy-btn.copied {
+            background-color: #3498db;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background-color: #e8f4fc;
+            color: var(--secondary-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .command-count {
+            margin-bottom: 1.5rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .command-count strong {
+            color: var(--secondary-color);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 3rem;
+            color: #777;
+        }
+
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+
+        .copy-feedback {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 1000;
+        }
+
+        .command-hint {
+            display: inline-block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div>
+                    <h1><i class="fas fa-code-branch"></i> Git Commands Reference</h1>
+                    <p class="tagline">Complete cheat sheet with 100+ Git commands and their purposes. Click on any command to copy it to clipboard.</p>
+                </div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search commands or purposes...">
+                </div>
+            </div>
+            <div class="controls">
+                <div class="category-filter" id="categoryFilter">
+                    <!-- Categories will be added by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="command-count" id="commandCount">Showing <strong>0</strong> commands</div>
+        <div class="commands-grid" id="commandsGrid">
+            <!-- Command cards will be inserted here by JavaScript -->
+        </div>
+    </main>
+
+    <footer class="container">
+        <p>Git Commands Reference • Designed for education and developer productivity • Based on Git 2.x</p>
+        <p>Commands can be copied by clicking on the code block or the copy button</p>
+    </footer>
+
+    <div class="copy-feedback" id="copyFeedback">
+        <i class="fas fa-check-circle"></i> Command copied to clipboard!
+    </div>
+
+    <script>
+        // Git commands data - organized by category
+        const gitCommands = [
+            // SETUP & CONFIGURATION
+            { 
+                command: "git --version", 
+                purpose: "Check Git version",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config --global user.name \"Your Name\"", 
+                purpose: "Set global username for all repositories",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config --global user.email \"your.email@example.com\"", 
+                purpose: "Set global email for all repositories",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config --list", 
+                purpose: "List all configuration settings",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config user.name", 
+                purpose: "Check specific configuration setting",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config --global core.editor \"nano\"", 
+                purpose: "Set default text editor for commit messages",
+                category: "Setup & Configuration"
+            },
+            { 
+                command: "git config --global alias.co checkout", 
+                purpose: "Create command alias (shortcut) for checkout",
+                category: "Setup & Configuration"
+            },
+            
+            // REPOSITORY CREATION & CLONING
+            { 
+                command: "git init", 
+                purpose: "Initialize new Git repository in current directory",
+                category: "Repository Creation & Cloning"
+            },
+            { 
+                command: "git init -b main", 
+                purpose: "Initialize with specific branch name (main instead of master)",
+                category: "Repository Creation & Cloning"
+            },
+            { 
+                command: "git clone https://github.com/username/repo.git", 
+                purpose: "Clone repository from URL to local machine",
+                category: "Repository Creation & Cloning"
+            },
+            { 
+                command: "git clone https://github.com/username/repo.git my-project", 
+                purpose: "Clone repository with custom directory name",
+                category: "Repository Creation & Cloning"
+            },
+            { 
+                command: "git clone --depth 1 https://github.com/username/repo.git", 
+                purpose: "Shallow clone (only latest commit, no history)",
+                category: "Repository Creation & Cloning"
+            },
+            { 
+                command: "git clone --branch develop https://github.com/username/repo.git", 
+                purpose: "Clone specific branch only",
+                category: "Repository Creation & Cloning"
+            },
+            
+            // BASIC WORKFLOW
+            { 
+                command: "git status", 
+                purpose: "Check repository status (untracked, modified, staged files)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git status -s", 
+                purpose: "Short status format (compact view)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add filename.txt", 
+                purpose: "Stage specific file for commit",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add .", 
+                purpose: "Stage all new and modified files in current directory",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add -A", 
+                purpose: "Stage all files in entire project (including deletions)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add -u", 
+                purpose: "Stage only modified/deleted files, not new files",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add -p", 
+                purpose: "Interactive staging (choose chunks to stage)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git add *.js", 
+                purpose: "Stage files by pattern (all JavaScript files)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git reset HEAD filename.txt", 
+                purpose: "Unstage file (keep changes in working directory)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git restore --staged filename.txt", 
+                purpose: "Modern alternative to unstage file (Git 2.23+)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git commit -m \"Message\"", 
+                purpose: "Commit staged changes with message",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git commit -a -m \"Message\"", 
+                purpose: "Commit all tracked files (skip staging)",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git commit --amend -m \"New message\"", 
+                purpose: "Amend last commit with new message or changes",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git commit --amend --no-edit", 
+                purpose: "Amend last commit but keep same message",
+                category: "Basic Workflow"
+            },
+            { 
+                command: "git commit --allow-empty -m \"Message\"", 
+                purpose: "Create empty commit (no changes)",
+                category: "Basic Workflow"
+            },
+            
+            // VIEWING HISTORY & DIFFERENCES
+            { 
+                command: "git log", 
+                purpose: "Show commit history with details",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --oneline", 
+                purpose: "One-line commit history (compact view)",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log -n 5", 
+                purpose: "Show last N commits (5 in this example)",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --graph --oneline --all", 
+                purpose: "Graph view of branches and commits",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --author=\"John\"", 
+                purpose: "Show commits by specific author",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --grep=\"bug fix\"", 
+                purpose: "Search commit messages for text",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --since=\"2024-01-01\" --until=\"2024-12-31\"", 
+                purpose: "Show commits in date range",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log -p", 
+                purpose: "Show changes (patch) in each commit",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --stat", 
+                purpose: "Show statistics for each commit",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git log --merges", 
+                purpose: "Show only merge commits",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff", 
+                purpose: "Show unstaged changes (working directory vs staging)",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff --staged", 
+                purpose: "Show staged changes (staging vs last commit)",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff HEAD~3", 
+                purpose: "Compare working directory with 3 commits ago",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff abc123 def456", 
+                purpose: "Compare two specific commits",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff main..develop", 
+                purpose: "Compare two branches",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff --word-diff", 
+                purpose: "Word diff instead of line diff",
+                category: "Viewing History & Differences"
+            },
+            { 
+                command: "git diff --name-only", 
+                purpose: "Show only names of changed files",
+                category: "Viewing History & Differences"
+            },
+            
+            // BRANCHING
+            { 
+                command: "git branch", 
+                purpose: "List all local branches",
+                category: "Branching"
+            },
+            { 
+                command: "git branch -a", 
+                purpose: "List all branches (local and remote)",
+                category: "Branching"
+            },
+            { 
+                command: "git branch feature-branch", 
+                purpose: "Create new branch",
+                category: "Branching"
+            },
+            { 
+                command: "git checkout -b feature-branch", 
+                purpose: "Create new branch and switch to it",
+                category: "Branching"
+            },
+            { 
+                command: "git switch -c feature-branch", 
+                purpose: "Modern alternative to create and switch (Git 2.23+)",
+                category: "Branching"
+            },
+            { 
+                command: "git branch -m new-name", 
+                purpose: "Rename current branch",
+                category: "Branching"
+            },
+            { 
+                command: "git branch -d branch-name", 
+                purpose: "Delete branch (safe - won't delete if unmerged)",
+                category: "Branching"
+            },
+            { 
+                command: "git branch -D branch-name", 
+                purpose: "Force delete branch (even if unmerged)",
+                category: "Branching"
+            },
+            { 
+                command: "git checkout branch-name", 
+                purpose: "Switch to existing branch",
+                category: "Branching"
+            },
+            { 
+                command: "git switch branch-name", 
+                purpose: "Modern alternative to switch branches (Git 2.23+)",
+                category: "Branching"
+            },
+            { 
+                command: "git checkout -", 
+                purpose: "Switch to previous branch",
+                category: "Branching"
+            },
+            { 
+                command: "git checkout --track origin/branch", 
+                purpose: "Create tracking branch from remote",
+                category: "Branching"
+            },
+            
+            // MERGING
+            { 
+                command: "git merge feature-branch", 
+                purpose: "Merge branch into current branch",
+                category: "Merging"
+            },
+            { 
+                command: "git merge --no-ff feature-branch", 
+                purpose: "Merge with commit (no fast-forward)",
+                category: "Merging"
+            },
+            { 
+                command: "git merge --abort", 
+                purpose: "Abort merge in progress",
+                category: "Merging"
+            },
+            
+            // REBASING
+            { 
+                command: "git rebase main", 
+                purpose: "Rebase current branch onto main",
+                category: "Rebasing"
+            },
+            { 
+                command: "git rebase -i HEAD~3", 
+                purpose: "Interactive rebase (edit last 3 commits)",
+                category: "Rebasing"
+            },
+            { 
+                command: "git rebase --continue", 
+                purpose: "Continue rebase after resolving conflicts",
+                category: "Rebasing"
+            },
+            { 
+                command: "git rebase --abort", 
+                purpose: "Abort rebase operation",
+                category: "Rebasing"
+            },
+            { 
+                command: "git rebase --skip", 
+                purpose: "Skip current patch in rebase",
+                category: "Rebasing"
+            },
+            
+            // STASHING
+            { 
+                command: "git stash", 
+                purpose: "Stash changes temporarily",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash save \"Message\"", 
+                purpose: "Stash changes with custom message",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash list", 
+                purpose: "List all stashes",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash apply", 
+                purpose: "Apply latest stash (keep in stash list)",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash apply stash@{2}", 
+                purpose: "Apply specific stash",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash pop", 
+                purpose: "Apply and remove latest stash from list",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash drop stash@{1}", 
+                purpose: "Remove specific stash from list",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash clear", 
+                purpose: "Remove all stashes",
+                category: "Stashing"
+            },
+            { 
+                command: "git stash branch new-branch", 
+                purpose: "Create branch from stash",
+                category: "Stashing"
+            },
+            
+            // REMOTE REPOSITORIES
+            { 
+                command: "git remote add origin https://github.com/user/repo.git", 
+                purpose: "Add remote repository",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git remote -v", 
+                purpose: "List all remotes with URLs",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git remote show origin", 
+                purpose: "Show detailed information about remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git remote rename origin upstream", 
+                purpose: "Rename remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git remote remove origin", 
+                purpose: "Remove remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push -u origin main", 
+                purpose: "First push (set upstream tracking)",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push", 
+                purpose: "Push changes to upstream branch",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push origin feature-branch", 
+                purpose: "Push specific branch to remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push --force", 
+                purpose: "Force push (overwrites remote history - use with caution!)",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push --force-with-lease", 
+                purpose: "Safer force push (checks for conflicts)",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push --all", 
+                purpose: "Push all branches to remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push --tags", 
+                purpose: "Push all tags to remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git push origin --delete branch-name", 
+                purpose: "Delete remote branch",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git fetch origin", 
+                purpose: "Download changes from remote but don't merge",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git fetch --all", 
+                purpose: "Fetch from all remotes",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git fetch origin main", 
+                purpose: "Fetch specific branch from remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git pull origin main", 
+                purpose: "Fetch and merge changes from remote",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git pull --rebase origin main", 
+                purpose: "Pull with rebase instead of merge",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git branch --set-upstream-to=origin/main", 
+                purpose: "Set upstream tracking for current branch",
+                category: "Remote Repositories"
+            },
+            { 
+                command: "git branch -vv", 
+                purpose: "View tracking branches and their status",
+                category: "Remote Repositories"
+            },
+            
+            // TAGGING
+            { 
+                command: "git tag v1.0.0", 
+                purpose: "Create lightweight tag (pointer to commit)",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag -a v1.0.0 -m \"Message\"", 
+                purpose: "Create annotated tag (with message)",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag v1.0.0 abc123", 
+                purpose: "Tag specific commit",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag -s v1.0.0 -m \"Message\"", 
+                purpose: "Create signed tag (with GPG signature)",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag", 
+                purpose: "List all tags",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag -l \"v1.*\"", 
+                purpose: "List tags with pattern",
+                category: "Tagging"
+            },
+            { 
+                command: "git show v1.0.0", 
+                purpose: "Show tag details",
+                category: "Tagging"
+            },
+            { 
+                command: "git tag -d v1.0.0", 
+                purpose: "Delete local tag",
+                category: "Tagging"
+            },
+            { 
+                command: "git push origin --delete v1.0.0", 
+                purpose: "Delete remote tag",
+                category: "Tagging"
+            },
+            { 
+                command: "git push origin v1.0.0", 
+                purpose: "Push specific tag to remote",
+                category: "Tagging"
+            },
+            { 
+                command: "git push --tags", 
+                purpose: "Push all tags to remote",
+                category: "Tagging"
+            },
+            
+            // UNDOING CHANGES
+            { 
+                command: "git checkout -- filename.txt", 
+                purpose: "Discard unstaged changes in working directory",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git restore filename.txt", 
+                purpose: "Modern alternative to discard changes (Git 2.23+)",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git checkout -- .", 
+                purpose: "Discard all unstaged changes in working directory",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git restore file1.txt file2.txt", 
+                purpose: "Discard changes to multiple files",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git reset HEAD filename.txt", 
+                purpose: "Unstage file (keep changes in working directory)",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git restore --staged filename.txt", 
+                purpose: "Modern alternative to unstage file",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git reset --soft HEAD~1", 
+                purpose: "Undo last commit, keep changes staged",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git reset HEAD~1", 
+                purpose: "Undo last commit, keep changes unstaged (default --mixed)",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git reset --hard HEAD~1", 
+                purpose: "Undo last commit, discard all changes completely",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git revert abc123", 
+                purpose: "Revert specific commit (creates new commit)",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git revert HEAD", 
+                purpose: "Revert last commit",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git revert abc123..def456", 
+                purpose: "Revert range of commits",
+                category: "Undoing Changes"
+            },
+            { 
+                command: "git rebase -i HEAD~5", 
+                purpose: "Interactive rebase to edit/delete/squash last 5 commits",
+                category: "Undoing Changes"
+            },
+            
+            // FILE OPERATIONS
+            { 
+                command: "git mv old-name.txt new-name.txt", 
+                purpose: "Move or rename file (Git tracks this as rename)",
+                category: "File Operations"
+            },
+            { 
+                command: "git rm filename.txt", 
+                purpose: "Remove file from Git and filesystem",
+                category: "File Operations"
+            },
+            { 
+                command: "git rm --cached filename.txt", 
+                purpose: "Remove file from Git only (keep in filesystem)",
+                category: "File Operations"
+            },
+            { 
+                command: "git rm -r directory-name", 
+                purpose: "Remove directory recursively",
+                category: "File Operations"
+            },
+            { 
+                command: "touch .gitignore", 
+                purpose: "Create .gitignore file",
+                category: "File Operations",
+                hint: "Add patterns for files to ignore"
+            },
+            
+            // ADVANCED COMMANDS
+            { 
+                command: "git cherry-pick abc123", 
+                purpose: "Apply specific commit to current branch",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git cherry-pick abc123 def456", 
+                purpose: "Apply multiple commits to current branch",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git cherry-pick -e abc123", 
+                purpose: "Cherry-pick with option to edit commit message",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git worktree add ../new-feature feature-branch", 
+                purpose: "Add new working tree (multiple checkouts)",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git worktree list", 
+                purpose: "List all worktrees",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git worktree remove ../new-feature", 
+                purpose: "Remove worktree",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git format-patch HEAD~3", 
+                purpose: "Create patch files from last 3 commits",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git apply patch-file.patch", 
+                purpose: "Apply patch file to working directory",
+                category: "Advanced Commands"
+            },
+            { 
+                command: "git am patch-file.patch", 
+                purpose: "Apply and commit patch file",
+                category: "Advanced Commands"
+            },
+            
+            // CLEANUP & MAINTENANCE
+            { 
+                command: "git clean -f", 
+                purpose: "Remove untracked files (dry run first with -n)",
+                category: "Cleanup & Maintenance"
+            },
+            { 
+                command: "git clean -fd", 
+                purpose: "Remove untracked files and directories",
+                category: "Cleanup & Maintenance"
+            },
+            { 
+                command: "git clean -i", 
+                purpose: "Interactive cleanup (prompt before deleting)",
+                category: "Cleanup & Maintenance"
+            },
+            { 
+                command: "git gc", 
+                purpose: "Garbage collection (clean up unnecessary files)",
+                category: "Cleanup & Maintenance"
+            },
+            { 
+                command: "git prune", 
+                purpose: "Prune unreachable objects",
+                category: "Cleanup & Maintenance"
+            },
+            { 
+                command: "git count-objects -vH", 
+                purpose: "Show repository size in human-readable format",
+                category: "Cleanup & Maintenance"
+            },
+            
+            // WORKFLOW EXAMPLES
+            { 
+                command: "git checkout -b feature", 
+                purpose: "Create feature branch (common workflow)",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git commit -m \"Add feature\"", 
+                purpose: "Commit changes with descriptive message",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git checkout main", 
+                purpose: "Switch back to main branch",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git pull origin main", 
+                purpose: "Update main branch with latest changes",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git checkout feature", 
+                purpose: "Switch back to feature branch",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git rebase main", 
+                purpose: "Update feature branch with main branch changes",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git checkout main", 
+                purpose: "Go back to main branch for merging",
+                category: "Workflow Examples"
+            },
+            { 
+                command: "git merge feature", 
+                purpose: "Merge feature branch into main branch",
+                category: "Workflow Examples"
+            }
+        ];
+
+        // Extract unique categories
+        const categories = [...new Set(gitCommands.map(cmd => cmd.category))];
+        
+        // DOM Elements
+        const commandsGrid = document.getElementById('commandsGrid');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const searchInput = document.getElementById('searchInput');
+        const commandCount = document.getElementById('commandCount');
+        const copyFeedback = document.getElementById('copyFeedback');
+        
+        // Current filter state
+        let currentCategory = 'all';
+        let currentSearch = '';
+        
+        // Initialize the app
+        function initApp() {
+            renderCategoryFilters();
+            renderCommands();
+            setupEventListeners();
+        }
+        
+        // Render category filter buttons
+        function renderCategoryFilters() {
+            categoryFilter.innerHTML = '';
+            
+            // Add "All" button
+            const allButton = document.createElement('button');
+            allButton.className = 'category-btn active';
+            allButton.textContent = 'All Commands';
+            allButton.dataset.category = 'all';
+            allButton.addEventListener('click', () => filterByCategory('all'));
+            categoryFilter.appendChild(allButton);
+            
+            // Add category buttons
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = 'category-btn';
+                button.textContent = category;
+                button.dataset.category = category;
+                button.addEventListener('click', () => filterByCategory(category));
+                categoryFilter.appendChild(button);
+            });
+        }
+        
+        // Render commands based on current filters
+        function renderCommands() {
+            commandsGrid.innerHTML = '';
+            
+            // Filter commands
+            let filteredCommands = gitCommands;
+            
+            if (currentCategory !== 'all') {
+                filteredCommands = filteredCommands.filter(cmd => cmd.category === currentCategory);
+            }
+            
+            if (currentSearch) {
+                const searchLower = currentSearch.toLowerCase();
+                filteredCommands = filteredCommands.filter(cmd => 
+                    cmd.command.toLowerCase().includes(searchLower) || 
+                    cmd.purpose.toLowerCase().includes(searchLower) ||
+                    cmd.category.toLowerCase().includes(searchLower)
+                );
+            }
+            
+            // Update command count
+            commandCount.innerHTML = `Showing <strong>${filteredCommands.length}</strong> commands${currentCategory !== 'all' ? ` in <strong>${currentCategory}</strong>` : ''}${currentSearch ? ` matching "<strong>${currentSearch}</strong>"` : ''}`;
+            
+            // If no results
+            if (filteredCommands.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'no-results';
+                noResults.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>No commands found</h3>
+                    <p>Try a different search term or select another category</p>
+                `;
+                commandsGrid.appendChild(noResults);
+                return;
+            }
+            
+            // Render command cards
+            filteredCommands.forEach(cmd => {
+                const card = document.createElement('div');
+                card.className = 'command-card';
+                
+                card.innerHTML = `
+                    <div class="command-header">
+                        <span class="category-badge">${cmd.category}</span>
+                        <button class="copy-btn">
+                            <i class="far fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="command-code" title="Click to copy">
+                        ${cmd.command}
+                    </div>
+                    <div class="command-purpose">${cmd.purpose}</div>
+                    ${cmd.hint ? `<div class="command-hint">${cmd.hint}</div>` : ''}
+                `;
+                
+                // Add click event to copy button
+                const copyBtn = card.querySelector('.copy-btn');
+                const codeBlock = card.querySelector('.command-code');
+                
+                const copyCommand = () => {
+                    navigator.clipboard.writeText(cmd.command).then(() => {
+                        // Show feedback
+                        copyFeedback.style.display = 'block';
+                        setTimeout(() => {
+                            copyFeedback.style.display = 'none';
+                        }, 2000);
+                        
+                        // Visual feedback on button
+                        copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                        copyBtn.classList.add('copied');
+                        
+                        setTimeout(() => {
+                            copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy';
+                            copyBtn.classList.remove('copied');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = cmd.command;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        
+                        // Show feedback
+                        copyFeedback.style.display = 'block';
+                        copyFeedback.textContent = 'Command copied to clipboard!';
+                        setTimeout(() => {
+                            copyFeedback.style.display = 'none';
+                        }, 2000);
+                    });
+                };
+                
+                copyBtn.addEventListener('click', copyCommand);
+                codeBlock.addEventListener('click', copyCommand);
+                
+                commandsGrid.appendChild(card);
+            });
+        }
+        
+        // Filter by category
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            renderCommands();
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search input
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                renderCommands();
+            });
+            
+            // Clear search when clicking X in search field (if supported)
+            searchInput.addEventListener('search', () => {
+                if (searchInput.value === '') {
+                    currentSearch = '';
+                    renderCommands();
+                }
+            });
+        }
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

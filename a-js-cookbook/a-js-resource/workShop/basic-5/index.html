@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Template</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-file-alt"></i> Topic Template</h1>
+            <p class="subtitle">Tap on a topic to view its content</p>
+        </header>
+        
+        <div class="topics-container">
+            <div class="topic" id="topic-1" data-content="topic1">
+                <div class="topic-header">
+                    <i class="fas fa-star"></i>
+                    <h2>Topic 1</h2>
+                    <span class="topic-indicator">Tap me!</span>
+                </div>
+                <div class="topic-preview">
+                    <p>Introduction to web development fundamentals</p>
+                </div>
+            </div>
+            
+            <div class="topic" id="topic-2" data-content="topic2">
+                <div class="topic-header">
+                    <i class="fas fa-chart-bar"></i>
+                    <h2>Topic 2</h2>
+                    <span class="topic-indicator">Tap me!</span>
+                </div>
+                <div class="topic-preview">
+                    <p>Advanced concepts and modern frameworks</p>
+                </div>
+            </div>
+            
+            <div class="topic" id="topic-3" data-content="topic3">
+                <div class="topic-header">
+                    <i class="fas fa-cogs"></i>
+                    <h2>Topic 3</h2>
+                    <span class="topic-indicator">Tap me!</span>
+                </div>
+                <div class="topic-preview">
+                    <p>Tools, deployment, and best practices</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="content-header">
+                <h2><i class="fas fa-align-left"></i> Topic Content</h2>
+                <div class="active-topic-indicator">
+                    Currently viewing: <span id="current-topic">None selected</span>
+                </div>
+            </div>
+            <div class="content-body" id="content-body">
+                <div class="default-content">
+                    <i class="fas fa-hand-pointer fa-3x"></i>
+                    <h3>Select a Topic</h3>
+                    <p>Tap on any topic card on the left to display its content here.</p>
+                    <p>The content will dynamically replace this area.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Dynamic Content Template • Tap topics to update content</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

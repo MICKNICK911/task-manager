@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Template</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="topics-drawer" id="drawers">
+            <div class="topic active" data-topic="1">
+                <div class="topic-title">Topic 1</div>
+            </div>
+            <div class="topic" data-topic="2">
+                <div class="topic-title">Topic 2</div>
+            </div>
+            <div class="topic" data-topic="3">
+                <div class="topic-title">Topic 3</div>
+            </div>
+            <div class="topic" data-topic="4">
+                <div class="topic-title">Topic 4</div>
+            </div>
+            <div class="topic" data-topic="5">
+                <div class="topic-title">Topic 5</div>
+            </div>
+            <div class="topic" data-topic="6">
+                <div class="topic-title">Topic 6</div>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="content-header">
+                Topic Content
+                <div id="show"></div>
+            </div>
+            <div class="content-body" id="content-body">
+                <!-- Topic 1 content (default) -->
+                <div class="topic-content active" data-topic="1">
+                    <h3>Topic 1 Content</h3>
+                    <p>This is the content for Topic 1.</p>
+                    <p>When you tap on Topic 1 in the drawer, this content is displayed.</p>
+                    <p>This is the default content that shows when the page loads.</p>
+                </div>
+                
+                <!-- Topic 2 content (hidden by default) -->
+                <div class="topic-content" data-topic="2">
+                    <h3>Topic 2 Content</h3>
+                    <p>This is the content for Topic 2.</p>
+                    <p>When you tap on Topic 2 in the drawer, this content replaces the Topic 1 content.</p>
+                    <p>Each topic has its own unique content that appears here.</p>
+                </div>
+                
+                <!-- Topic 3 content (hidden by default) -->
+                <div class="topic-content" data-topic="3">
+                    <h3>Topic 3 Content</h3>
+                    <p>This is the content for Topic 3.</p>
+                    <p>The content area updates dynamically when you select different topics.</p>
+                    <p>No page refresh is needed - it's all handled by JavaScript.</p>
+                </div>
+                
+                <!-- Topic 4 content (hidden by default) -->
+                <div class="topic-content" data-topic="4">
+                    <h3>Topic 4 Content</h3>
+                    <p>This is the content for Topic 4.</p>
+                    <p>The drawer on the left contains all six topics.</p>
+                    <p>Tap any topic to see its corresponding content here.</p>
+                </div>
+                
+                <!-- Topic 5 content (hidden by default) -->
+                <div class="topic-content" data-topic="5">
+                    <h3>Topic 5 Content</h3>
+                    <p>This is the content for Topic 5.</p>
+                    <p>The mockup shows a simple structure with topics on one side and content on the other.</p>
+                    <p>This implementation follows that exact structure.</p>
+                </div>
+                
+                <!-- Topic 6 content (hidden by default) -->
+                <div class="topic-content" data-topic="6">
+                    <h3>Topic 6 Content</h3>
+                    <p>This is the content for Topic 6.</p>
+                    <p>This is the final topic in the drawer.</p>
+                    <p>All content updates happen without external dependencies - pure HTML, CSS, and JavaScript.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

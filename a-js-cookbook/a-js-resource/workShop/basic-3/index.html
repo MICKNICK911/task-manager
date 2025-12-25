@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOM Manipulation Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1><i class="fas fa-code"></i> DOM Manipulation Demo</h1>
+            <p class="subtitle">Learn how to manipulate DOM elements with JavaScript</p>
+        </header>
+        
+        <nav class="navigation">
+            <ul>
+                <li><button class="nav-btn active" data-screen="intro"><i class="fas fa-home"></i> Introduction</button></li>
+                <li><button class="nav-btn" data-screen="create"><i class="fas fa-plus-circle"></i> Create Elements</button></li>
+                <li><button class="nav-btn" data-screen="modify"><i class="fas fa-edit"></i> Modify Elements</button></li>
+                <li><button class="nav-btn" data-screen="style"><i class="fas fa-palette"></i> Style Elements</button></li>
+                <li><button class="nav-btn" data-screen="events"><i class="fas fa-mouse-pointer"></i> Event Handling</button></li>
+                <li><button class="nav-btn" data-screen="interactive"><i class="fas fa-gamepad"></i> Interactive Demo</button></li>
+            </ul>
+        </nav>
+        
+        <main class="screen-container">
+            <!-- Introduction Screen -->
+            <section id="intro-screen" class="screen active">
+                <h2><i class="fas fa-info-circle"></i> Introduction to DOM Manipulation</h2>
+                <div class="content">
+                    <p>The Document Object Model (DOM) is a programming interface for HTML and XML documents. It represents the structure of a document as a tree of objects that can be manipulated with JavaScript.</p>
+                    
+                    <div class="dom-visualization">
+                        <h3>DOM Tree Structure</h3>
+                        <div class="tree">
+                            <div class="node root">document (root)</div>
+                            <div class="connector"></div>
+                            <div class="node">html</div>
+                            <div class="connector"></div>
+                            <div class="branch">
+                                <div class="node">head</div>
+                                <div class="node">body</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="key-concepts">
+                        <h3>Key Concepts:</h3>
+                        <ul>
+                            <li><strong>DOM Nodes:</strong> Every element, attribute, and text in HTML is a node in the DOM tree.</li>
+                            <li><strong>DOM Methods:</strong> JavaScript provides methods to select and manipulate DOM elements.</li>
+                            <li><strong>DOM Events:</strong> JavaScript can respond to user interactions through event handlers.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="navigation-instruction">
+                        <p><i class="fas fa-arrow-right"></i> Use the navigation buttons above to explore different DOM manipulation techniques.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Create Elements Screen -->
+            <section id="create-screen" class="screen">
+                <h2><i class="fas fa-plus-circle"></i> Creating DOM Elements</h2>
+                <div class="content">
+                    <p>JavaScript provides several methods to create new elements and add them to the DOM.</p>
+                    
+                    <div class="demo-area">
+                        <h3>Demo: Create and Add Elements</h3>
+                        <div class="demo-controls">
+                            <button id="create-paragraph" class="demo-btn"><i class="fas fa-paragraph"></i> Add Paragraph</button>
+                            <button id="create-heading" class="demo-btn"><i class="fas fa-heading"></i> Add Heading</button>
+                            <button id="create-list-item" class="demo-btn"><i class="fas fa-list"></i> Add List Item</button>
+                            <button id="clear-elements" class="demo-btn danger"><i class="fas fa-trash"></i> Clear All</button>
+                        </div>
+                        
+                        <div class="element-container" id="element-container">
+                            <p>Elements created will appear here.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="code-example">
+                        <h3>Example Code</h3>
+                        <pre><code>// Create a new element
+const newElement = document.createElement('div');
+newElement.textContent = 'This is a new div element';
+
+// Add to the DOM
+document.getElementById('container').appendChild(newElement);</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Modify Elements Screen -->
+            <section id="modify-screen" class="screen">
+                <h2><i class="fas fa-edit"></i> Modifying DOM Elements</h2>
+                <div class="content">
+                    <p>You can modify existing elements by changing their content, attributes, or structure.</p>
+                    
+                    <div class="demo-area">
+                        <h3>Demo: Modify Elements</h3>
+                        <div class="modifiable-element" id="modifiable-element">
+                            <h4>This is a modifiable element</h4>
+                            <p>Click the buttons below to modify this element.</p>
+                            <img src="https://via.placeholder.com/150x100/4a6fa5/ffffff?text=Sample+Image" alt="Sample" id="modifiable-image">
+                        </div>
+                        
+                        <div class="demo-controls">
+                            <div class="control-group">
+                                <h4>Change Text Content:</h4>
+                                <button id="change-text" class="demo-btn"><i class="fas fa-font"></i> Change Text</button>
+                                <button id="toggle-html" class="demo-btn"><i class="fas fa-code"></i> Toggle HTML</button>
+                            </div>
+                            
+                            <div class="control-group">
+                                <h4>Modify Attributes:</h4>
+                                <button id="change-image" class="demo-btn"><i class="fas fa-image"></i> Change Image</button>
+                                <button id="toggle-hidden" class="demo-btn"><i class="fas fa-eye-slash"></i> Toggle Visibility</button>
+                            </div>
+                            
+                            <div class="control-group">
+                                <h4>Reset Element:</h4>
+                                <button id="reset-element" class="demo-btn"><i class="fas fa-undo"></i> Reset</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Style Elements Screen -->
+            <section id="style-screen" class="screen">
+                <h2><i class="fas fa-palette"></i> Styling DOM Elements</h2>
+                <div class="content">
+                    <p>JavaScript can dynamically change CSS styles of elements.</p>
+                    
+                    <div class="demo-area">
+                        <h3>Demo: Style an Element</h3>
+                        <div class="stylable-element" id="stylable-element">
+                            <p>This element's styles can be changed dynamically with JavaScript.</p>
+                            <p>Try clicking the style buttons to see the changes.</p>
+                        </div>
+                        
+                        <div class="demo-controls">
+                            <div class="control-group">
+                                <h4>Background Color:</h4>
+                                <button data-style="backgroundColor" data-value="#ff6b6b" class="style-btn color-red">Red</button>
+                                <button data-style="backgroundColor" data-value="#4ecdc4" class="style-btn color-teal">Teal</button>
+                                <button data-style="backgroundColor" data-value="#ffe66d" class="style-btn color-yellow">Yellow</button>
+                            </div>
+                            
+                            <div class="control-group">
+                                <h4>Text Styles:</h4>
+                                <button data-style="color" data-value="#2d3436" class="style-btn">Dark Text</button>
+                                <button data-style="fontSize" data-value="24px" class="style-btn">Larger Text</button>
+                                <button data-style="fontWeight" data-value="bold" class="style-btn">Bold Text</button>
+                            </div>
+                            
+                            <div class="control-group">
+                                <h4>Layout:</h4>
+                                <button data-style="padding" data-value="30px" class="style-btn">Add Padding</button>
+                                <button data-style="borderRadius" data-value="20px" class="style-btn">Round Corners</button>
+                                <button data-style="boxShadow" data-value="10px 10px 20px rgba(0,0,0,0.3)" class="style-btn">Add Shadow</button>
+                            </div>
+                            
+                            <button id="reset-styles" class="demo-btn danger"><i class="fas fa-undo"></i> Reset Styles</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Event Handling Screen -->
+            <section id="events-screen" class="screen">
+                <h2><i class="fas fa-mouse-pointer"></i> DOM Event Handling</h2>
+                <div class="content">
+                    <p>JavaScript can respond to user interactions through event listeners.</p>
+                    
+                    <div class="demo-area">
+                        <h3>Demo: Event Listeners</h3>
+                        <div class="event-demo" id="event-demo">
+                            <div class="event-box clickable" id="click-box">
+                                <p>Click me</p>
+                                <div class="event-counter">Clicks: <span>0</span></div>
+                            </div>
+                            
+                            <div class="event-box hoverable" id="hover-box">
+                                <p>Hover over me</p>
+                                <div class="event-counter">Hovers: <span>0</span></div>
+                            </div>
+                            
+                            <div class="event-box keypressable" id="keypress-box">
+                                <p>Press any key</p>
+                                <div class="event-counter">Keys pressed: <span>0</span></div>
+                                <div class="last-key">Last key: <span>None</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="demo-controls">
+                            <div class="control-group">
+                                <h4>Event Controls:</h4>
+                                <button id="add-events" class="demo-btn"><i class="fas fa-plus-circle"></i> Add Event Listeners</button>
+                                <button id="remove-events" class="demo-btn"><i class="fas fa-minus-circle"></i> Remove Event Listeners</button>
+                                <button id="reset-counters" class="demo-btn danger"><i class="fas fa-redo"></i> Reset Counters</button>
+                            </div>
+                        </div>
+                        
+                        <div class="event-log">
+                            <h4>Event Log:</h4>
+                            <div id="event-log-content">
+                                <p>Events will be logged here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Interactive Demo Screen -->
+            <section id="interactive-screen" class="screen">
+                <h2><i class="fas fa-gamepad"></i> Interactive DOM Demo</h2>
+                <div class="content">
+                    <p>This interactive demo combines multiple DOM manipulation techniques.</p>
+                    
+                    <div class="demo-area">
+                        <h3>Build Your Custom Card</h3>
+                        <div class="card-builder">
+                            <div class="card-preview" id="card-preview">
+                                <h4 id="card-title">Sample Card Title</h4>
+                                <p id="card-content">This is sample card content. Customize it using the controls below.</p>
+                                <div id="card-footer">Card Footer</div>
+                            </div>
+                            
+                            <div class="card-controls">
+                                <div class="control-group">
+                                    <h4>Card Title:</h4>
+                                    <input type="text" id="card-title-input" value="Sample Card Title">
+                                    <button id="update-title" class="demo-btn small">Update Title</button>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <h4>Card Content:</h4>
+                                    <textarea id="card-content-input" rows="3">This is sample card content. Customize it using the controls below.</textarea>
+                                    <button id="update-content" class="demo-btn small">Update Content</button>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <h4>Card Color:</h4>
+                                    <input type="color" id="card-color-picker" value="#4a6fa5">
+                                    <button id="apply-color" class="demo-btn small">Apply Color</button>
+                                </div>
+                                
+                                <div class="control-group">
+                                    <h4>Card Actions:</h4>
+                                    <button id="add-card-border" class="demo-btn small">Toggle Border</button>
+                                    <button id="add-card-shadow" class="demo-btn small">Toggle Shadow</button>
+                                    <button id="reset-card" class="demo-btn small danger">Reset Card</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="dom-inspector">
+                            <h4>Live DOM Inspector:</h4>
+                            <div class="inspector-output" id="inspector-output">
+                                <!-- DOM structure will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>DOM Manipulation Demo &copy; 2023 | Created with Vanilla JavaScript</p>
+            <p class="footer-note">This demo showcases how JavaScript can manipulate HTML elements without any external libraries.</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
