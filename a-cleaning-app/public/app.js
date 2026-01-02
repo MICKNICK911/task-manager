@@ -171,7 +171,7 @@ function renderSchedule() {
     const tbody = document.getElementById('schedule-body');
     const gender = currentGender;
     
-    if (!schedules[gender]) {
+    if (!schedules[gender] || schedules[gender].length === 0) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="4" style="text-align: center; padding: 40px;">
@@ -273,28 +273,21 @@ function isUserInEntry(entry, userName) {
     return name1.includes(searchName) || name2.includes(searchName);
 }
 
-// Current duty calculation
+// Current duty calculation - FIXED VERSION
 function updateCurrentDuty() {
     const gender = currentGender;
     const userSchedule = schedules[gender] || [];
     const now = new Date();
     
     let currentDuty = null;
-    let nextDuty = null;
-    let foundCurrent = false;
     
-    // Find current and next duty
+    // Find current duty
     for (const entry of userSchedule) {
         const [startTime, endTime] = parseTimeSlot(entry.timeSlot);
         
         if (isTimeInSlot(now, startTime, endTime)) {
             currentDuty = entry;
-            foundCurrent = true;
-        } else if (!foundCurrent && isTimeBefore(now, startTime)) {
-            // This is a future slot, find the next one
-            if (!nextDuty || isTimeBefore(startTime, parseTimeSlot(nextDuty.timeSlot)[0])) {
-                nextDuty = entry;
-            }
+            break;
         }
     }
     
@@ -308,29 +301,14 @@ function updateCurrentDuty() {
             <span>Currently on duty: <strong>${names}</strong></span>
         `;
         currentDutyElement.style.color = 'var(--success-color)';
-    } else if (nextDuty) {
-        const [nextStart] = parseTimeSlot(nextDuty.timeSlot);
-        const timeUntil = Math.floor((nextStart - now) / (1000 * 60)); // minutes until
-        
-        if (timeUntil <= 30) {
-            currentDutyElement.innerHTML = `
-                <i class="fas fa-hourglass-half"></i>
-                <span>Next duty in ${timeUntil} minutes</span>
-            `;
-            currentDutyElement.style.color = 'var(--warning-color)';
-        } else {
-            currentDutyElement.innerHTML = `
-                <i class="fas fa-clock"></i>
-                <span>No current duty. Next duty at ${formatTime(nextStart)}</span>
-            `;
-            currentDutyElement.style.color = 'var(--secondary-color)';
-        }
+        currentDutyElement.style.backgroundColor = 'var(--current-duty-color)';
     } else {
         currentDutyElement.innerHTML = `
-            <i class="fas fa-calendar-check"></i>
-            <span>No more duties scheduled for today</span>
+            <i class="fas fa-clock"></i>
+            <span>No one currently on duty</span>
         `;
         currentDutyElement.style.color = 'var(--secondary-color)';
+        currentDutyElement.style.backgroundColor = '#f8f9fa';
     }
     
     // Update upcoming duties sidebar
@@ -347,7 +325,7 @@ function updateUpcomingDuties() {
     const userUpcomingDuties = userSchedule
         .filter(entry => {
             const [startTime] = parseTimeSlot(entry.timeSlot);
-            return isTimeBefore(now, startTime) && isUserInEntry(entry, currentUserName);
+            return startTime > now && isUserInEntry(entry, currentUserName);
         })
         .slice(0, 3); // Show next 3 duties
     
@@ -417,10 +395,12 @@ function updateUserDetails() {
     `;
 }
 
-// Utility functions
+// FIXED: Time parsing functions
 function parseTimeSlot(timeSlot) {
-    // Parse time slot like "9:30 – 10:00"
-    const [startStr, endStr] = timeSlot.split('–').map(s => s.trim());
+    // Parse time slot like "9:30 – 10:00" (note: en dash not regular dash)
+    // First, normalize the dash character
+    const normalizedSlot = timeSlot.replace(/[–—]/g, '-').trim();
+    const [startStr, endStr] = normalizedSlot.split('-').map(s => s.trim());
     
     const now = new Date();
     const today = now.getDate();
@@ -430,34 +410,45 @@ function parseTimeSlot(timeSlot) {
     const startTime = parseTimeString(startStr, today, month, year);
     let endTime = parseTimeString(endStr, today, month, year);
     
-    // Handle overnight slots (though unlikely for washroom schedule)
+    // If end time is before start time, it's probably PM (e.g., 1:00 PM)
     if (endTime < startTime) {
-        endTime.setDate(endTime.getDate() + 1);
+        // Check if it's PM time (1-4 PM)
+        const endHour = parseInt(endStr.split(':')[0]);
+        if (endHour >= 1 && endHour <= 4) {
+            endTime.setHours(endTime.getHours() + 12);
+        }
     }
     
     return [startTime, endTime];
 }
 
 function parseTimeString(timeStr, day, month, year) {
-    const [hours, minutes] = timeStr.split(':').map(Number);
-    const time = new Date(year, month, day, hours, minutes || 0);
+    // Remove any AM/PM indicators if present
+    const cleanTimeStr = timeStr.replace(/\s*(am|pm)\s*/gi, '').trim();
+    const [hours, minutes] = cleanTimeStr.split(':').map(Number);
     
-    // Handle 12-hour format if needed
-    if (timeStr.toLowerCase().includes('pm') && hours < 12) {
-        time.setHours(hours + 12);
-    } else if (timeStr.toLowerCase().includes('am') && hours === 12) {
-        time.setHours(0);
+    // Handle 12-hour format conversion
+    let hour24 = hours;
+    const lowerTimeStr = timeStr.toLowerCase();
+    
+    if (lowerTimeStr.includes('pm') && hours < 12) {
+        hour24 = hours + 12;
+    } else if (lowerTimeStr.includes('am') && hours === 12) {
+        hour24 = 0;
     }
     
-    return time;
+    // If time is 1-4 and no AM/PM specified, assume PM for schedule
+    if (!lowerTimeStr.includes('am') && !lowerTimeStr.includes('pm')) {
+        if (hours >= 1 && hours <= 4) {
+            hour24 = hours + 12;
+        }
+    }
+    
+    return new Date(year, month, day, hour24, minutes || 0, 0);
 }
 
 function isTimeInSlot(now, startTime, endTime) {
     return now >= startTime && now <= endTime;
-}
-
-function isTimeBefore(time1, time2) {
-    return time1 < time2;
 }
 
 function formatTime(date) {
@@ -485,7 +476,43 @@ function initButtons() {
     document.getElementById('change-user-btn').addEventListener('click', () => {
         scheduleScreen.style.display = 'none';
         welcomeScreen.style.display = 'flex';
+        // Pre-fill the form with current user info
         document.getElementById('full-name').value = currentUserName;
+        
+        // Check the appropriate gender radio button
+        const genderRadios = document.querySelectorAll('input[name="gender"]');
+        genderRadios.forEach(radio => {
+            if (radio.value === currentGender) {
+                radio.checked = true;
+                const card = radio.parentElement.querySelector('.gender-card');
+                card.classList.add('active');
+                card.classList.add(currentGender);
+            }
+        });
+        
         document.getElementById('full-name').focus();
     });
 }
+
+// Test function to debug time parsing
+function testTimeParsing() {
+    const testSlots = [
+        "9:30 – 10:00",
+        "10:00 – 10:30",
+        "11:00 – 11:30",
+        "12:00 – 12:30",
+        "1:00 – 1:30",
+        "2:00 – 2:30",
+        "3:00 – 3:30",
+        "3:30 – 4:00"
+    ];
+    
+    console.log("Testing time parsing:");
+    testSlots.forEach(slot => {
+        const [start, end] = parseTimeSlot(slot);
+        console.log(`${slot}: Start=${start.toLocaleTimeString()}, End=${end.toLocaleTimeString()}`);
+    });
+}
+
+// Call test function on load for debugging
+// testTimeParsing();
