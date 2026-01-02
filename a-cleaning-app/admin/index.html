@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Washroom Schedule Management</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            updatePassword 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { 
+            getFirestore,
+            collection,
+            doc,
+            getDocs,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where,
+            orderBy,
+            writeBatch
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+             apiKey: "AIzaSyBIuRj51fQUCNREMT3JEZAyWjl7TsBU_08",
+             authDomain: "my-task-manager-c8e32.firebaseapp.com",
+             databaseURL: "https://my-task-manager-c8e32-default-rtdb.firebaseio.com",
+             projectId: "my-task-manager-c8e32",
+             storageBucket: "my-task-manager-c8e32.firebasestorage.app",
+             messagingSenderId: "182865686068",
+             appId: "1:182865686068:web:f26df0d13f0e07f59c6461"
+            };
+
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseModules = {
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            updatePassword,
+            collection,
+            doc,
+            getDocs,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            where,
+            orderBy,
+            writeBatch
+        };
+    </script>
+</head>
+<body>
+    <div class="container" id="login-container">
+        <div class="login-box">
+            <div class="logo">
+                <i class="fas fa-calendar-alt"></i>
+                <h1>Schedule Admin</h1>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="email" required placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" id="password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <div id="login-error" class="error-message"></div>
+            </form>
+            <div class="login-footer">
+                <p>Contact system administrator for access</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="admin-container" style="display: none;">
+        <header>
+            <div class="header-left">
+                <h1><i class="fas fa-tools"></i> Schedule Management</h1>
+                <div class="current-time" id="current-time"></div>
+            </div>
+            <div class="header-right">
+                <button id="change-password-btn" class="btn-secondary">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+                <button id="logout-btn" class="btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="display">Display Settings</button>
+            <button class="tab-btn" data-tab="female">Female Schedule</button>
+            <button class="tab-btn" data-tab="male">Male Schedule</button>
+            <button class="tab-btn" data-tab="import-export">Import/Export</button>
+        </div>
+
+        <main>
+            <!-- Display Settings Tab -->
+            <div id="display-tab" class="tab-content active">
+                <div class="card">
+                    <h2><i class="fas fa-eye"></i> Public Display Settings</h2>
+                    <p>Select which information should be visible in the public app</p>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-group">
+                            <h3><i class="fas fa-female"></i> Female Schedule</h3>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-female-names" checked>
+                                    <span class="checkmark"></span>
+                                    Show Names
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-female-congregation" checked>
+                                    <span class="checkmark"></span>
+                                    Show Congregation
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-female-number" checked>
+                                    <span class="checkmark"></span>
+                                    Show Contact Numbers
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h3><i class="fas fa-male"></i> Male Schedule</h3>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-male-names" checked>
+                                    <span class="checkmark"></span>
+                                    Show Names
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-male-congregation" checked>
+                                    <span class="checkmark"></span>
+                                    Show Congregation
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="show-male-number" checked>
+                                    <span class="checkmark"></span>
+                                    Show Contact Numbers
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="save-display-settings" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Display Settings
+                    </button>
+                </div>
+            </div>
+
+            <!-- Female Schedule Tab -->
+            <div id="female-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-female"></i> Female Washroom Schedule</h2>
+                        <button id="add-female-entry" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Entry
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="female-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Time Slot</th>
+                                    <th>Name 1</th>
+                                    <th>Congregation 1</th>
+                                    <th>Number 1</th>
+                                    <th>Name 2</th>
+                                    <th>Congregation 2</th>
+                                    <th>Number 2</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="female-schedule-body">
+                                <!-- Entries will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Male Schedule Tab -->
+            <div id="male-tab" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-male"></i> Male Washroom Schedule</h2>
+                        <button id="add-male-entry" class="btn-primary">
+                            <i class="fas fa-plus"></i> Add Entry
+                        </button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="male-schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Time Slot</th>
+                                    <th>Name 1</th>
+                                    <th>Congregation 1</th>
+                                    <th>Number 1</th>
+                                    <th>Name 2</th>
+                                    <th>Congregation 2</th>
+                                    <th>Number 2</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="male-schedule-body">
+                                <!-- Entries will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Import/Export Tab -->
+            <div id="import-export-tab" class="tab-content">
+                <div class="card">
+                    <h2><i class="fas fa-database"></i> Backup & Restore</h2>
+                    
+                    <div class="import-export-grid">
+                        <div class="export-section">
+                            <h3><i class="fas fa-download"></i> Export Data</h3>
+                            <p>Download all schedule data as JSON file for backup</p>
+                            <button id="export-data" class="btn-primary">
+                                <i class="fas fa-file-export"></i> Export All Data
+                            </button>
+                            <div class="format-preview">
+                                <pre id="export-preview"></pre>
+                            </div>
+                        </div>
+                        
+                        <div class="import-section">
+                            <h3><i class="fas fa-upload"></i> Import Data</h3>
+                            <p>Upload JSON file to restore or update schedule data</p>
+                            <div class="file-upload">
+                                <input type="file" id="import-file" accept=".json">
+                                <label for="import-file" class="btn-secondary">
+                                    <i class="fas fa-file-import"></i> Choose File
+                                </label>
+                                <span id="file-name">No file chosen</span>
+                            </div>
+                            <button id="import-data" class="btn-primary" disabled>
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                            <div class="warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Warning: Importing will overwrite existing schedule data</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Modal for Add/Edit Entry -->
+        <div id="entry-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Add Schedule Entry</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form id="entry-form">
+                    <input type="hidden" id="entry-id">
+                    <input type="hidden" id="entry-gender">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="time-slot">Time Slot</label>
+                            <input type="text" id="time-slot" required 
+                                   placeholder="e.g., 9:30 – 10:00">
+                        </div>
+                    </div>
+                    
+                    <div class="person-section">
+                        <h4>First Person</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name1">Name</label>
+                                <input type="text" id="name1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="congregation1">Congregation</label>
+                                <input type="text" id="congregation1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="number1">Contact Number</label>
+                                <input type="text" id="number1" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="person-section">
+                        <h4>Second Person</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name2">Name</label>
+                                <input type="text" id="name2">
+                            </div>
+                            <div class="form-group">
+                                <label for="congregation2">Congregation</label>
+                                <input type="text" id="congregation2">
+                            </div>
+                            <div class="form-group">
+                                <label for="number2">Contact Number</label>
+                                <input type="text" id="number2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn-primary">Save Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Password Modal -->
+        <div id="password-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Change Password</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <form id="password-form">
+                    <div class="form-group">
+                        <label for="current-password">Current Password</label>
+                        <input type="password" id="current-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-password">New Password</label>
+                        <input type="password" id="new-password" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm New Password</label>
+                        <input type="password" id="confirm-password" required>
+                    </div>
+                    <div id="password-error" class="error-message"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary modal-close">Cancel</button>
+                        <button type="submit" class="btn-primary">Change Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
