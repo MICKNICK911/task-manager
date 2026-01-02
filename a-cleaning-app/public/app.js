@@ -218,7 +218,7 @@ function renderSchedule() {
         
         const cells = [`
             <td class="time-cell">
-                <strong>${entry.timeSlot}</strong>
+                <strong>${formatTimeSlotForDisplay(entry.timeSlot)}</strong>
             </td>
         `];
         
@@ -273,7 +273,7 @@ function isUserInEntry(entry, userName) {
     return name1.includes(searchName) || name2.includes(searchName);
 }
 
-// Current duty calculation - FIXED VERSION
+// Current duty calculation - IMPROVED VERSION
 function updateCurrentDuty() {
     const gender = currentGender;
     const userSchedule = schedules[gender] || [];
@@ -346,7 +346,7 @@ function updateUpcomingDuties() {
         
         return `
             <div class="upcoming-duty ${isNext ? 'next' : ''}">
-                <h4>${entry.timeSlot}</h4>
+                <h4>${formatTimeSlotForDisplay(entry.timeSlot)}</h4>
                 <p><i class="fas fa-clock"></i> ${timeStr}</p>
                 ${entry.congregation1 ? `<p><i class="fas fa-church"></i> ${entry.congregation1}</p>` : ''}
             </div>
@@ -383,7 +383,7 @@ function updateUserDetails() {
         ${todayDuties.map((duty, index) => `
             <div class="detail-item">
                 <span class="detail-label">Duty ${index + 1}</span>
-                <span class="detail-value">${duty.timeSlot}</span>
+                <span class="detail-value">${formatTimeSlotForDisplay(duty.timeSlot)}</span>
             </div>
             ${duty.congregation1 ? `
             <div class="detail-item">
@@ -395,13 +395,32 @@ function updateUserDetails() {
     `;
 }
 
-// FIXED: Time parsing functions
+// IMPROVED: Time parsing functions to handle multiple formats
 function parseTimeSlot(timeSlot) {
-    // Parse time slot like "9:30 – 10:00" (note: en dash not regular dash)
-    // First, normalize the dash character
-    const normalizedSlot = timeSlot.replace(/[–—]/g, '-').trim();
-    const [startStr, endStr] = normalizedSlot.split('-').map(s => s.trim());
+    // Clean and normalize the time slot string
+    const cleanTimeSlot = timeSlot.trim().toUpperCase();
     
+    // Split by various possible separators
+    const separators = ['–', '—', '-', ' to ', ' TO '];
+    let startStr = '', endStr = '';
+    
+    for (const sep of separators) {
+        if (cleanTimeSlot.includes(sep)) {
+            const parts = cleanTimeSlot.split(sep).map(part => part.trim());
+            if (parts.length === 2) {
+                [startStr, endStr] = parts;
+                break;
+            }
+        }
+    }
+    
+    // If no separator found, return defaults
+    if (!startStr || !endStr) {
+        const now = new Date();
+        return [now, now];
+    }
+    
+    // Parse start and end times
     const now = new Date();
     const today = now.getDate();
     const month = now.getMonth();
@@ -410,12 +429,16 @@ function parseTimeSlot(timeSlot) {
     const startTime = parseTimeString(startStr, today, month, year);
     let endTime = parseTimeString(endStr, today, month, year);
     
-    // If end time is before start time, it's probably PM (e.g., 1:00 PM)
+    // Handle cases where end time might be earlier than start time (crossing midday)
+    // This can happen with formats like "11:30AM-1:00PM"
     if (endTime < startTime) {
-        // Check if it's PM time (1-4 PM)
-        const endHour = parseInt(endStr.split(':')[0]);
-        if (endHour >= 1 && endHour <= 4) {
+        // Add 12 hours to handle PM times
+        if (endStr.includes('PM') && !startStr.includes('PM')) {
             endTime.setHours(endTime.getHours() + 12);
+        }
+        // If still earlier, add a day (unlikely for our schedule but safe)
+        if (endTime < startTime) {
+            endTime.setDate(endTime.getDate() + 1);
         }
     }
     
@@ -423,28 +446,60 @@ function parseTimeSlot(timeSlot) {
 }
 
 function parseTimeString(timeStr, day, month, year) {
-    // Remove any AM/PM indicators if present
-    const cleanTimeStr = timeStr.replace(/\s*(am|pm)\s*/gi, '').trim();
-    const [hours, minutes] = cleanTimeStr.split(':').map(Number);
+    // Normalize the time string
+    let normalized = timeStr.trim().toUpperCase();
     
-    // Handle 12-hour format conversion
-    let hour24 = hours;
-    const lowerTimeStr = timeStr.toLowerCase();
+    // Extract AM/PM indicator
+    let isAM = false;
+    let isPM = false;
     
-    if (lowerTimeStr.includes('pm') && hours < 12) {
-        hour24 = hours + 12;
-    } else if (lowerTimeStr.includes('am') && hours === 12) {
-        hour24 = 0;
+    if (normalized.includes('AM')) {
+        isAM = true;
+        normalized = normalized.replace('AM', '').trim();
+    } else if (normalized.includes('PM')) {
+        isPM = true;
+        normalized = normalized.replace('PM', '').trim();
     }
     
-    // If time is 1-4 and no AM/PM specified, assume PM for schedule
-    if (!lowerTimeStr.includes('am') && !lowerTimeStr.includes('pm')) {
-        if (hours >= 1 && hours <= 4) {
-            hour24 = hours + 12;
+    // Parse hours and minutes
+    let hours, minutes;
+    
+    if (normalized.includes(':')) {
+        const [h, m] = normalized.split(':').map(Number);
+        hours = h;
+        minutes = m || 0;
+    } else {
+        // Handle formats without colon (e.g., "4AM")
+        hours = parseInt(normalized) || 0;
+        minutes = 0;
+    }
+    
+    // Convert 12-hour format to 24-hour format
+    if (isAM && hours === 12) {
+        hours = 0; // 12 AM = 0 hours
+    } else if (isPM && hours < 12) {
+        hours += 12; // 1 PM = 13 hours, etc.
+    }
+    
+    // If no AM/PM specified, use context to determine
+    if (!isAM && !isPM) {
+        // Morning hours (likely AM)
+        if (hours >= 1 && hours <= 11) {
+            // Keep as is (AM)
+        }
+        // Noon
+        else if (hours === 12) {
+            // 12 without AM/PM is usually PM
+            isPM = true;
+        }
+        // Afternoon hours (likely PM)
+        else if (hours >= 1 && hours <= 4) {
+            hours += 12; // Convert to 24-hour
         }
     }
     
-    return new Date(year, month, day, hour24, minutes || 0, 0);
+    // Create and return date object
+    return new Date(year, month, day, hours, minutes, 0);
 }
 
 function isTimeInSlot(now, startTime, endTime) {
@@ -457,6 +512,15 @@ function formatTime(date) {
         minute: '2-digit',
         hour12: true
     });
+}
+
+function formatTimeSlotForDisplay(timeSlot) {
+    // Clean up the time slot for display
+    return timeSlot
+        .replace(/–/g, ' – ')  // Add spaces around en dash
+        .replace(/(AM|PM)/gi, ' $1')  // Add space before AM/PM
+        .replace(/\s+/g, ' ')  // Normalize spaces
+        .trim();
 }
 
 function updateCurrentTime() {
@@ -504,13 +568,21 @@ function testTimeParsing() {
         "1:00 – 1:30",
         "2:00 – 2:30",
         "3:00 – 3:30",
-        "3:30 – 4:00"
+        "3:30 – 4:00",
+        "4:00AM-4:30AM",
+        "4:00PM-4:30PM",
+        "9:30AM-10:00AM",
+        "1:00PM-1:30PM"
     ];
     
     console.log("Testing time parsing:");
     testSlots.forEach(slot => {
-        const [start, end] = parseTimeSlot(slot);
-        console.log(`${slot}: Start=${start.toLocaleTimeString()}, End=${end.toLocaleTimeString()}`);
+        try {
+            const [start, end] = parseTimeSlot(slot);
+            console.log(`${slot}: Start=${start.toLocaleTimeString()}, End=${end.toLocaleTimeString()}`);
+        } catch (error) {
+            console.error(`Error parsing ${slot}:`, error);
+        }
     });
 }
 
