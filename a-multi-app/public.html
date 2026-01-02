@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Blog - Learn Words</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3498db, #2c3e50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+        }
+        
+        .stats {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+        
+        .words-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .word-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid #3498db;
+        }
+        
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        
+        .word-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+        }
+        
+        .word {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 700;
+        }
+        
+        .part-of-speech {
+            background: #e8f4fc;
+            color: #3498db;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .meaning {
+            color: #34495e;
+            line-height: 1.6;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        .example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #2ecc71;
+            font-style: italic;
+            color: #555;
+            margin-top: 10px;
+        }
+        
+        .category-tag {
+            display: inline-block;
+            background: #f1f2f6;
+            color: #666;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
+        
+        .loading, .error, .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            border-left: 5px solid #e74c3c;
+            color: #c0392b;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: #7f8c8d;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .words-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Vocabulary Builder</h1>
+            <p class="subtitle">Expand your lexicon with carefully curated words and definitions</p>
+            <div class="stats">
+                <span id="word-count">Loading words...</span>
+            </div>
+        </header>
+        
+        <main>
+            <!-- Loading State -->
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                <p>Loading vocabulary database...</p>
+            </div>
+            
+            <!-- Error State -->
+            <div id="error" class="error" style="display: none;">
+                <h3>⚠️ Connection Issue</h3>
+                <p>Unable to load words. Please check your internet connection.</p>
+                <button onclick="loadWords()" style="margin-top: 15px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    Retry
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="empty-state" style="display: none;">
+                <h3>📝 No Words Yet</h3>
+                <p>The vocabulary list is currently empty. Check back soon!</p>
+            </div>
+            
+            <!-- Words Grid -->
+            <div id="words-grid" class="words-grid" style="display: none;"></div>
+        </main>
+        
+        <footer>
+            <p>Vocabulary Blog • Updated in real-time • Words: <span id="live-count">0</span></p>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: #95a5a6;">
+                This app reads from a shared Firebase database. Changes made in the Admin app appear here automatically.
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION: Replace with YOUR Firebase config
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBIuRj51fQUCNREMT3JEZAyWjl7TsBU_08",
+            authDomain: "my-task-manager-c8e32.firebaseapp.com",
+            projectId: "my-task-manager-c8e32",
+            storageBucket: "my-task-manager-c8e32.firebasestorage.app",
+            messagingSenderId: "182865686068",
+            appId: "1:182865686068:web:ef8716eb8edcc7749c6461"
+        };
+        
+        // ============================================
+        // APPLICATION STATE & INITIALIZATION
+        // ============================================
+        let app, db, wordsCollection;
+        let unsubscribe = null; // For cleaning up real-time listener
+        
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                app = firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                wordsCollection = db.collection('words');
+                console.log("✅ Firebase initialized successfully");
+                loadWords(); // Start loading data
+            } catch (error) {
+                console.error("❌ Firebase initialization failed:", error);
+                showError();
+            }
+        }
+        
+        // ============================================
+        // UI STATE MANAGEMENT
+        // ============================================
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('words-grid').style.display = 'none';
+        }
+        
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('words-grid').style.display = 'none';
+        }
+        
+        function showEmpty() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+            document.getElementById('words-grid').style.display = 'none';
+            updateWordCount(0);
+        }
+        
+        function showWords() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('words-grid').style.display = 'grid';
+        }
+        
+        // ============================================
+        // DATA LOADING & REAL-TIME UPDATES
+        // ============================================
+        function loadWords() {
+            showLoading();
+            
+            // Clean up previous listener if exists
+            if (unsubscribe) {
+                unsubscribe();
+            }
+            
+            // Set up real-time listener
+            unsubscribe = wordsCollection
+                .orderBy('createdAt', 'desc')
+                .onSnapshot({
+                    next: (snapshot) => {
+                        if (snapshot.empty) {
+                            showEmpty();
+                            return;
+                        }
+                        
+                        const wordsGrid = document.getElementById('words-grid');
+                        wordsGrid.innerHTML = '';
+                        
+                        snapshot.forEach(doc => {
+                            const word = doc.data();
+                            word.id = doc.id;
+                            renderWordCard(word);
+                        });
+                        
+                        updateWordCount(snapshot.size);
+                        showWords();
+                    },
+                    error: (error) => {
+                        console.error("Error loading words:", error);
+                        showError();
+                    }
+                });
+        }
+        
+        // ============================================
+        // RENDERING FUNCTIONS
+        // ============================================
+        function renderWordCard(word) {
+            const wordsGrid = document.getElementById('words-grid');
+            
+            const card = document.createElement('div');
+            card.className = 'word-card';
+            card.innerHTML = `
+                <div class="word-header">
+                    <div class="word">${escapeHtml(word.term)}</div>
+                    ${word.partOfSpeech ? `<div class="part-of-speech">${escapeHtml(word.partOfSpeech)}</div>` : ''}
+                </div>
+                <div class="meaning">${escapeHtml(word.definition)}</div>
+                ${word.example ? `<div class="example">"${escapeHtml(word.example)}"</div>` : ''}
+                ${word.category ? `<div class="category-tag">${escapeHtml(word.category)}</div>` : ''}
+                <div style="margin-top: 15px; font-size: 0.8rem; color: #95a5a6;">
+                    Last updated: ${word.updatedAt ? formatDate(word.updatedAt.toDate()) : 'N/A'}
+                </div>
+            `;
+            
+            wordsGrid.appendChild(card);
+        }
+        
+        function updateWordCount(count) {
+            document.getElementById('word-count').textContent = `${count} ${count === 1 ? 'word' : 'words'} available`;
+            document.getElementById('live-count').textContent = count;
+        }
+        
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        // ============================================
+        // INITIALIZE APP ON LOAD
+        // ============================================
+        document.addEventListener('DOMContentLoaded', initializeFirebase);
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        });
+    </script>
+</body>
+</html>
