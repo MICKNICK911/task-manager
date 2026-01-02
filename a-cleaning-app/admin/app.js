@@ -337,12 +337,6 @@ async function saveEntry() {
             updatedAt: new Date().toISOString()
         };
         
-        // Validate time slot format
-        if (!validateTimeSlot(entryData.timeSlot)) {
-            showToast('Please enter time slot in format: "9:30 – 10:00"', 'error');
-            return;
-        }
-        
         if (entryId) {
             // Update existing entry
             const entryRef = firebaseModules.doc(db, 'schedules', entryId);
@@ -361,12 +355,6 @@ async function saveEntry() {
         console.error('Error saving entry:', error);
         showToast('Error saving entry', 'error');
     }
-}
-
-function validateTimeSlot(timeSlot) {
-    // Validate format like "9:30 – 10:00"
-    const timeSlotRegex = /^\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}$/;
-    return timeSlotRegex.test(timeSlot);
 }
 
 function editEntry(gender, entryId) {
