@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Washroom Schedule</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+             apiKey: "AIzaSyBIuRj51fQUCNREMT3JEZAyWjl7TsBU_08",
+             authDomain: "my-task-manager-c8e32.firebaseapp.com",
+             databaseURL: "https://my-task-manager-c8e32-default-rtdb.firebaseio.com",
+             projectId: "my-task-manager-c8e32",
+             storageBucket: "my-task-manager-c8e32.firebasestorage.app",
+             messagingSenderId: "182865686068",
+             appId: "1:182865686068:web:f26df0d13f0e07f59c6461"
+            };
+   
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally
+        window.firebaseDb = db;
+        window.firebaseModules = { collection, onSnapshot, query, orderBy };
+    </script>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-container">
+            <div class="welcome-header">
+                <i class="fas fa-calendar-alt"></i>
+                <h1>Washroom Schedule</h1>
+                <p>Find your duty schedule and see who's currently on duty</p>
+            </div>
+            
+            <form id="user-form" class="user-form">
+                <div class="form-group">
+                    <label for="full-name">
+                        <i class="fas fa-user"></i> Full Name
+                    </label>
+                    <input type="text" id="full-name" required 
+                           placeholder="Enter your full name as in schedule">
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">
+                        <i class="fas fa-venus-mars"></i> Gender
+                    </label>
+                    <div class="gender-selector">
+                        <label class="gender-option">
+                            <input type="radio" name="gender" value="female" required>
+                            <div class="gender-card">
+                                <i class="fas fa-female"></i>
+                                <span>Female</span>
+                            </div>
+                        </label>
+                        <label class="gender-option">
+                            <input type="radio" name="gender" value="male" required>
+                            <div class="gender-card">
+                                <i class="fas fa-male"></i>
+                                <span>Male</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-arrow-right"></i> View Schedule
+                </button>
+                
+                <div class="form-footer">
+                    <p><i class="fas fa-info-circle"></i> Enter your name exactly as it appears in the schedule</p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Schedule Screen -->
+    <div id="schedule-screen" class="schedule-screen" style="display: none;">
+        <header class="schedule-header">
+            <div class="header-info">
+                <h1 id="user-greeting"></h1>
+                <div class="current-duty" id="current-duty">
+                    <i class="fas fa-clock"></i>
+                    <span>Loading current duty...</span>
+                </div>
+            </div>
+            <button id="change-user-btn" class="btn-secondary">
+                <i class="fas fa-user-edit"></i> Change User
+            </button>
+        </header>
+
+        <div class="schedule-container">
+            <div class="schedule-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-list-alt"></i> Schedule</h2>
+                    <div class="time-info">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Time Slot</th>
+                                <!-- Dynamic headers based on display settings -->
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-body">
+                            <!-- Schedule will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color current-duty-bg"></div>
+                        <span>Currently on duty</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color user-duty-bg"></div>
+                        <span>Your duty slot</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-sidebar">
+                <div class="info-card">
+                    <h3><i class="fas fa-info-circle"></i> Your Details</h3>
+                    <div class="user-details" id="user-details">
+                        <!-- User details will be shown here -->
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-bell"></i> Upcoming Duties</h3>
+                    <div class="upcoming-duties" id="upcoming-duties">
+                        <!-- Upcoming duties will be shown here -->
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <h3><i class="fas fa-question-circle"></i> Instructions</h3>
+                    <ul class="instructions">
+                        <li><i class="fas fa-check-circle"></i> Arrive 5 minutes before your slot</li>
+                        <li><i class="fas fa-check-circle"></i> Coordinate with your partner</li>
+                        <li><i class="fas fa-check-circle"></i> Report issues to administration</li>
+                        <li><i class="fas fa-check-circle"></i> Ensure proper handover</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="real-time-notice">
+            <i class="fas fa-sync-alt fa-spin"></i>
+            <span>Schedule updates in real-time</span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
