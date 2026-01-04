@@ -1,0 +1,334 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-01-04T08:21:12.724Z",
+  "schedules": {
+    "female": [
+      {
+        "id": "fem1",
+        "timeSlot": "9:30 – 10:00",
+        "name1": "LOIS OFOSU",
+        "name2": "OLIVIA BAAH",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "RIVER ROADWAY",
+        "number1": "0554919032",
+        "number2": "0538484020",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem2",
+        "timeSlot": "10:00 – 10:30",
+        "name1": "JOYCE SIAW",
+        "name2": "CHRISTABEL AIDOO",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0243078455",
+        "number2": "0544240770",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem3",
+        "timeSlot": "10:30 – 11:00",
+        "name1": "ABIGAIL AGYEI",
+        "name2": "ELIZABETH AGYEIWAA",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0549829975",
+        "number2": "",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem4",
+        "timeSlot": "11:00 – 11:30",
+        "name1": "PRISCILLA ANOKYE",
+        "name2": "JOSEPHINE OPPONG",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0241341304",
+        "number2": "0530126407",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem5",
+        "timeSlot": "11:30 – 12:00",
+        "name1": "MATILDA BOADI",
+        "name2": "MATHER AKONOBA DADZIE",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0554633431",
+        "number2": "0277048481",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem6",
+        "timeSlot": "12:00 – 12:30",
+        "name1": "JAEL BOAKYE",
+        "name2": "ERICA SOWORLO",
+        "congregation1": "KUTUNSE",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0533380458",
+        "number2": "0242615309",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem7",
+        "timeSlot": "12:30 – 1:00",
+        "name1": "JUANA ENTSIE",
+        "name2": "ELFRED NSOWAH",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "RIVER ROADWAY",
+        "number1": "0243731088",
+        "number2": "0555921696",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem8",
+        "timeSlot": "1:00 – 1:30",
+        "name1": "MARY ENTSIE",
+        "name2": "SANDRA ODURO",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "RIVER ROADWAY",
+        "number1": "0554031822",
+        "number2": "0530847857",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem9",
+        "timeSlot": "1:30 – 2:00",
+        "name1": "STEPHANIE ONWONA",
+        "name2": "ABIGAIL ASIEDU",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0257370514",
+        "number2": "0595495960",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem10",
+        "timeSlot": "2:00 – 2:30",
+        "name1": "JOANA ENTSIE",
+        "name2": "DINA DEBRA",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "EAST ROAD",
+        "number1": "0551463189",
+        "number2": "0558147326",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem11",
+        "timeSlot": "2:30 – 3:00",
+        "name1": "REBECCA AGBENYO",
+        "name2": "SANDRA AFFUM",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "RIVER ROADWAY",
+        "number1": "0594106235",
+        "number2": "0248616082",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem12",
+        "timeSlot": "3:00 – 3:30",
+        "name1": "MILLICENT LARTEY",
+        "name2": "DORA ASARE",
+        "congregation1": "EAST ROAD",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0249147998",
+        "number2": "0552605463",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "fem13",
+        "timeSlot": "3:30 – 4:00",
+        "name1": "JOAN OTENG ASAMANI",
+        "name2": "TRACY YEBOAH",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0598901072",
+        "number2": "0201801537",
+        "gender": "female",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      }
+    ],
+    "male": [
+      {
+        "id": "male1",
+        "timeSlot": "9:30 – 10:00",
+        "name1": "NANA OPOKU AMOAH",
+        "name2": "JESSEY GYAMFI",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0551641112",
+        "number2": "0555616852",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male2",
+        "timeSlot": "10:00 – 10:30",
+        "name1": "FRANK OFORI AMOAH",
+        "name2": "RICHARD OWUSU NTIRI",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0530931591",
+        "number2": "0501353966",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male3",
+        "timeSlot": "10:30 – 11:00",
+        "name1": "DERRICK AMOAKO",
+        "name2": "PATRICK KUVAN ODOI",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0537091206",
+        "number2": "0547340087",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male4",
+        "timeSlot": "11:00 – 11:30",
+        "name1": "DESMOND AMOAKO",
+        "name2": "PHILLAN AKOTIA",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "KUTUNSE",
+        "number1": "0537091206",
+        "number2": "0244058781",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male5",
+        "timeSlot": "11:30 – 12:00",
+        "name1": "FERGUSON AFFUM",
+        "name2": "FRANK ESSAH",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0545722150",
+        "number2": "0246757152",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male6",
+        "timeSlot": "12:00 – 12:30",
+        "name1": "MICHAEL OWUSU",
+        "name2": "EMMANUEL ASANTE",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0243160593",
+        "number2": "0553213378",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male7",
+        "timeSlot": "12:30 – 1:00",
+        "name1": "SAMUEL ONWONA",
+        "name2": "EMMANUEL ASARE",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "KUTUNSE",
+        "number1": "0599101072",
+        "number2": "",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male8",
+        "timeSlot": "1:00 – 1:30",
+        "name1": "SHADRACK ASARE",
+        "name2": "FOSTER ENTSIE",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0596093063",
+        "number2": "0551463189",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male9",
+        "timeSlot": "1:30 – 2:00",
+        "name1": "RUBEN SOWORLO",
+        "name2": "JONATHAN ARTHUR",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0242615309",
+        "number2": "0547141444",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male10",
+        "timeSlot": "2:00 – 2:30",
+        "name1": "JESSEY GYAMFI",
+        "name2": "FRANK ESSAH",
+        "congregation1": "KUTUNSE",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0555616852",
+        "number2": "0246757152",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male11",
+        "timeSlot": "2:30 – 3:00",
+        "name1": "FRANK OFORI AMOAH",
+        "name2": "EMMANUEL ASANTE",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0530931591",
+        "number2": "0553213378",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male12",
+        "timeSlot": "3:00 – 3:30",
+        "name1": "DESMOND AMOAKO",
+        "name2": "FOSTER ENTSIE",
+        "congregation1": "RIVER ROADWAY",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0537091206",
+        "number2": "0551463189",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      },
+      {
+        "id": "male13",
+        "timeSlot": "3:30 – 4:00",
+        "name1": "SHADRACK ASARE",
+        "name2": "SAMUEL ONWONA",
+        "congregation1": "SAPEIMAN EAST",
+        "congregation2": "SAPEIMAN EAST",
+        "number1": "0596093063",
+        "number2": "0599101072",
+        "gender": "male",
+        "updatedAt": "2026-01-04T08:21:12.724Z"
+      }
+    ]
+  },
+  "displaySettings": {
+    "female": {
+      "showCongregation": true,
+      "showNumber": false,
+      "showNames": true
+    },
+    "male": {
+      "showCongregation": true,
+      "showNames": true,
+      "showNumber": false
+    }
+  }
+}
