@@ -524,7 +524,7 @@ tr:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 8000;
     padding: var(--spacing-md);
     opacity: 0;
     visibility: hidden;
@@ -950,7 +950,7 @@ tr:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
+    z-index: 7999;
     padding: var(--spacing-md);
     transition: opacity var(--transition-slow);
 }
@@ -1083,6 +1083,7 @@ tr:hover {
     color: var(--primary);
     text-decoration: none;
     font-size: var(--font-size-sm);
+    
 }
 
 .forgot-password:hover {
@@ -1173,6 +1174,7 @@ tr:hover {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
+    z-index: 8000;
 }
 
 .password-strength {
