@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Clarity Compass · Toggle Panel</title>
+    <title>Clarity Compass · Import/Export + Confirm</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -24,6 +24,24 @@
             border: none !important;
             overflow: hidden;
         }
+        /* custom confirmation dialog overlay */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .confirm-card {
+            max-width: 90%;
+            width: 380px;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen p-4 md:p-6">
@@ -41,7 +59,7 @@
                 <p class="text-gray-300 text-sm mt-1">a private tool for reset, focus & self-respect</p>
             </div>
 
-            <!-- TOGGLE BUTTON (gear icon) + status -->
+            <!-- TOGGLE BUTTON -->
             <div class="flex justify-center mb-3">
                 <button id="togglePanelBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
                     <i class="fas fa-sliders-h" id="toggleIcon"></i> 
@@ -53,7 +71,14 @@
             <div id="customizationPanel" class="toggle-panel collapsed bg-black/30 rounded-2xl p-5 mb-8 border border-white/10">
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <h2 class="text-white font-semibold text-lg flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i> customize your reset</h2>
-                    <button id="resetToDefaultsBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-gray-300 transition"><i class="fas fa-undo-alt mr-1"></i> reset to default</button>
+                    <div class="flex gap-2">
+                        <button id="exportDataBtn" class="text-xs bg-emerald-600/70 hover:bg-emerald-500 px-3 py-1.5 rounded-full text-white transition"><i class="fas fa-download mr-1"></i> export .json</button>
+                        <label id="importLabelBtn" class="cursor-pointer text-xs bg-sky-600/70 hover:bg-sky-500 px-3 py-1.5 rounded-full text-white transition inline-flex items-center gap-1">
+                            <i class="fas fa-upload mr-1"></i> import .json
+                            <input type="file" id="importFileInput" accept=".json" class="hidden" />
+                        </label>
+                        <button id="resetToDefaultsBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-gray-300 transition"><i class="fas fa-undo-alt mr-1"></i> reset</button>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
@@ -118,7 +143,7 @@
 
     <script>
         // ------------------------------
-        // 100+ MOTIVATIONAL QUOTES (influential people + core truths)
+        // 100+ MOTIVATIONAL QUOTES (default bank)
         // ------------------------------
         const DEFAULT_QUOTES_ARRAY = [
             "“The greatest glory in living lies not in never falling, but in rising every time we fall.” — Nelson Mandela",
@@ -227,10 +252,12 @@
         const customizationPanel = document.getElementById('customizationPanel');
         const toggleIcon = document.getElementById('toggleIcon');
         const toggleTextSpan = document.getElementById('toggleText');
+        const exportDataBtn = document.getElementById('exportDataBtn');
+        const importFileInput = document.getElementById('importFileInput');
 
         let currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
 
-        // ----- toggle panel logic
+        // ----- toggle panel
         function togglePanel() {
             customizationPanel.classList.toggle('collapsed');
             const isCollapsed = customizationPanel.classList.contains('collapsed');
@@ -243,7 +270,7 @@
             }
         }
 
-        // ----- quote helpers
+        // ----- quotes helpers
         function saveQuotesToLocal() {
             localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList));
         }
@@ -292,7 +319,7 @@
             }
         }
 
-        // dates logic
+        // dates helpers
         function getStoredDates() {
             let start = localStorage.getItem(STORAGE_KEYS.START_DATE);
             let end = localStorage.getItem(STORAGE_KEYS.END_DATE);
@@ -339,6 +366,7 @@
             }
         }
 
+        // quote selection
         function getDailyQuoteByDate() {
             if (!currentQuotesList.length) return "You are not defective. You are becoming free.";
             const today = new Date();
@@ -374,7 +402,126 @@
             setDailyQuoteByDate();
         }
 
-        // init
+        // ----- EXPORT
+        function exportData() {
+            const exportObj = {
+                version: "1.0",
+                exportDate: new Date().toISOString(),
+                startDate: startDateInput.value,
+                endDate: endDateInput.value,
+                quotes: currentQuotesList
+            };
+            const jsonStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clarity-compass-backup-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ----- CUSTOM CONFIRMATION DIALOG for import
+        function showConfirmDialog(message, onConfirm, onCancel) {
+            // create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i>
+                        <h3 class="text-white font-bold text-lg">Confirm Import</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-6">${message}</p>
+                    <div class="flex gap-3 justify-end">
+                        <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
+                        <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Import</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            const cancelBtn = overlay.querySelector('#confirmCancelBtn');
+            const okBtn = overlay.querySelector('#confirmOkBtn');
+            
+            const cleanup = () => {
+                overlay.remove();
+            };
+            
+            cancelBtn.addEventListener('click', () => {
+                if (onCancel) onCancel();
+                cleanup();
+            });
+            
+            okBtn.addEventListener('click', () => {
+                if (onConfirm) onConfirm();
+                cleanup();
+            });
+            
+            // click outside to cancel
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    if (onCancel) onCancel();
+                    cleanup();
+                }
+            });
+        }
+
+        // actual import logic (called after confirmation)
+        let pendingImportFile = null;
+        
+        function performImport(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.startDate && imported.endDate && Array.isArray(imported.quotes)) {
+                        startDateInput.value = imported.startDate;
+                        endDateInput.value = imported.endDate;
+                        currentQuotesList = imported.quotes.filter(q => typeof q === 'string' && q.trim().length > 0);
+                        if (currentQuotesList.length === 0) currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
+                        saveQuotesToLocal();
+                        updateQuotesTextareaFromList();
+                        saveDates(imported.startDate, imported.endDate);
+                        updateDisplayAndCountdown();
+                        setDailyQuoteByDate();
+                        alert("✓ Import successful! Your data has been restored.");
+                    } else {
+                        alert("Invalid file. Must contain startDate, endDate, and quotes array.");
+                    }
+                } catch(err) {
+                    alert("Error parsing JSON file. Please make sure it's a valid backup.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function handleFileSelect(file) {
+            if (!file) return;
+            pendingImportFile = file;
+            showConfirmDialog(
+                "This will overwrite your current start date, end date, and all custom quotes. Your existing data will be lost. Are you sure?",
+                () => {
+                    performImport(pendingImportFile);
+                    pendingImportFile = null;
+                },
+                () => {
+                    pendingImportFile = null;
+                }
+            );
+        }
+
+        // attach import listener with confirmation
+        importFileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleFileSelect(e.target.files[0]);
+            }
+            importFileInput.value = ''; // allow re-upload same file later
+        });
+
+        // ----- init
         function init() {
             loadQuotesFromLocal();
             const { start, end } = getStoredDates();
@@ -390,7 +537,8 @@
             resetDefaultsBtn.addEventListener('click', resetToFactory);
             addQuoteBtn.addEventListener('click', addNewQuote);
             togglePanelBtn.addEventListener('click', togglePanel);
-            // start collapsed
+            exportDataBtn.addEventListener('click', exportData);
+            
             customizationPanel.classList.add('collapsed');
             toggleIcon.className = 'fas fa-sliders-h';
             toggleTextSpan.innerText = 'show settings';
