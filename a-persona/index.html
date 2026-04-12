@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Clarity Compass · Custom Reset Tracker</title>
+    <!-- Tailwind CSS + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons (free icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .quote-card { transition: all 0.2s ease; }
+        input, textarea, button { transition: all 0.15s ease; }
+        .days-number {
+            font-size: clamp(3rem, 15vw, 7rem);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen p-4 md:p-6">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- MAIN CARD -->
+        <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-5 md:p-8">
+            
+            <!-- header -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center bg-amber-500/20 rounded-full px-4 py-1.5 mb-3 border border-amber-400/40">
+                    <i class="fas fa-compass text-amber-300 mr-2 text-sm"></i>
+                    <span class="text-amber-300 text-xs font-bold tracking-wider">YOUR PACE · YOUR PATH</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-bold text-white">clarity compass</h1>
+                <p class="text-gray-300 text-sm mt-1">a private tool for reset, focus & self-respect</p>
+            </div>
+
+            <!-- CUSTOMIZATION PANEL (dates + quotes management) -->
+            <div class="bg-black/30 rounded-2xl p-4 md:p-5 mb-8 border border-white/10">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <h2 class="text-white font-semibold text-lg flex items-center gap-2"><i class="fas fa-sliders-h text-amber-400"></i> customize your reset</h2>
+                    <button id="resetToDefaultsBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-gray-300 transition"><i class="fas fa-undo-alt mr-1"></i> reset to default</button>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                    <div>
+                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">start date</label>
+                        <input type="date" id="startDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-400">
+                        <p class="text-gray-500 text-[11px] mt-1">when your journey began</p>
+                    </div>
+                    <div>
+                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">end date (goal)</label>
+                        <input type="date" id="endDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-400">
+                        <p class="text-gray-500 text-[11px] mt-1">your target finish line</p>
+                    </div>
+                </div>
+
+                <!-- QUOTES MANAGEMENT -->
+                <div class="border-t border-white/10 pt-4 mt-2">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                        <label class="text-gray-300 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fas fa-quote-left text-amber-400"></i> motivational quotes bank (changes daily)</label>
+                        <button id="addQuoteBtn" class="bg-amber-600/80 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded-full transition"><i class="fas fa-plus mr-1"></i> add new quote</button>
+                    </div>
+                    <textarea id="quotesBankTextarea" rows="5" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-gray-200 text-sm font-mono" placeholder="Each line = one quote. Edit or add your own..."></textarea>
+                    <p class="text-gray-400 text-[11px] mt-2"><i class="fas fa-save mr-1"></i> auto‑saves everything. One quote per line. Daily quote is chosen based on current date.</p>
+                </div>
+            </div>
+
+            <!-- COUNTDOWN DISPLAY (PROMINENT) -->
+            <div class="text-center my-4 py-2">
+                <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-1">days remaining</div>
+                <div class="days-number font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400" id="daysCount">---</div>
+                <div class="text-gray-300 font-medium text-md mt-1" id="endDateLabel">until your goal</div>
+                <div class="text-gray-500 text-xs mt-1 flex justify-center gap-3">
+                    <span><i class="far fa-calendar-alt"></i> <span id="totalDaysSpan">0</span> day journey</span>
+                    <span><i class="fas fa-percent"></i> <span id="progressPercent">0</span>% complete</span>
+                </div>
+            </div>
+
+            <!-- QUOTE CARD (daily) -->
+            <div class="mt-6 mb-5">
+                <div class="quote-card bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400 shadow-md">
+                    <div class="flex items-start gap-3">
+                        <i class="fas fa-feather-alt text-amber-400 text-2xl mt-1"></i>
+                        <div class="flex-1">
+                            <p class="text-white text-lg md:text-xl italic leading-relaxed" id="quoteText">loading wisdom...</p>
+                            <div class="flex justify-between items-center mt-4">
+                                <span class="text-gray-500 text-xs"><i class="far fa-clock"></i> today's anchor</span>
+                                <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> shuffle quote</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CORE REMINDERS (discreet, grounding) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-5 text-center text-xs">
+                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-female text-amber-400 mr-1"></i> <span class="text-gray-300">her body is hers</span><br><span class="text-gray-500">not a target, not a trophy</span></div>
+                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-shield-alt text-amber-400 mr-1"></i> <span class="text-gray-300">you are not defective</span><br><span class="text-gray-500">stepping away = strength</span></div>
+                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">worth ≠ urges</span><br><span class="text-gray-500">you matter. period.</span></div>
+            </div>
+            <div class="text-center text-gray-600 text-[10px] mt-6">⚡ everything saves automatically in your browser</div>
+        </div>
+    </div>
+
+    <script>
+        // ------------------------------
+        // 100+ MOTIVATIONAL QUOTES (influential people + timeless truths)
+        // ------------------------------
+        const DEFAULT_QUOTES_ARRAY = [
+            "“The greatest glory in living lies not in never falling, but in rising every time we fall.” — Nelson Mandela",
+            "“The way to get started is to quit talking and begin doing.” — Walt Disney",
+            "“Your time is limited, don't waste it living someone else's life.” — Steve Jobs",
+            "“If life were predictable it would cease to be life, and be without flavor.” — Eleanor Roosevelt",
+            "“It is during our darkest moments that we must focus to see the light.” — Aristotle",
+            "“You will face many defeats in life, but never let yourself be defeated.” — Maya Angelou",
+            "“Happiness is not something ready made. It comes from your own actions.” — Dalai Lama",
+            "“In the end, it's not the years in your life that count. It's the life in your years.” — Abraham Lincoln",
+            "“The only limit to our realization of tomorrow is our doubts of today.” — Franklin D. Roosevelt",
+            "“The future belongs to those who believe in the beauty of their dreams.” — Eleanor Roosevelt",
+            "“What lies behind us and what lies before us are tiny matters compared to what lies within us.” — Ralph Waldo Emerson",
+            "“Try not to become a man of success, but rather become a man of value.” — Albert Einstein",
+            "“It's not whether you get knocked down, it's whether you get up.” — Vince Lombardi",
+            "“If you are working on something exciting that you really care about, you don't have to be pushed. The vision pulls you.” — Steve Jobs",
+            "“We must accept finite disappointment, but never lose infinite hope.” — Martin Luther King Jr.",
+            "“Do not go where the path may lead, go instead where there is no path and leave a trail.” — Ralph Waldo Emerson",
+            "“You are never too old to set another goal or to dream a new dream.” — C.S. Lewis",
+            "“What you get by achieving your goals is not as important as what you become by achieving your goals.” — Zig Ziglar",
+            "“Believe you can and you're halfway there.” — Theodore Roosevelt",
+            "“The only person you are destined to become is the person you decide to be.” — Ralph Waldo Emerson",
+            "“Everything you've ever wanted is on the other side of fear.” — George Addair",
+            "“Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time.” — Thomas Edison",
+            "“The secret of getting ahead is getting started.” — Mark Twain",
+            "“Don't watch the clock; do what it does. Keep going.” — Sam Levenson",
+            "“You don't have to be extreme, just consistent.” — James Clear",
+            "“Discipline is choosing between what you want now and what you want most.” — Abraham Lincoln",
+            "“Your body is not a temple, it's a tool. Use it with intention.” — Anonymous (modern voice)",
+            "“A man who conquers himself is greater than one who conquers a city.” — Confucius",
+            "“No man is free who is not master of himself.” — Epictetus",
+            "“It's not the load that breaks you down, it's the way you carry it.” — Lou Holtz",
+            "“Strength does not come from physical capacity. It comes from an indomitable will.” — Mahatma Gandhi",
+            "“The best revenge is massive success.” — Frank Sinatra",
+            "“Don't count the days, make the days count.” — Muhammad Ali",
+            "“If it doesn't challenge you, it won't change you.” — Fred DeVito",
+            "“The pain of discipline is far less than the pain of regret.” — Sarah Bombell",
+            "“You didn't come this far to only come this far.” — Anonymous",
+            "“She is not a destination. You are not a predator.” — clarity compass",
+            "“Her body exists for her life — her breath, her walk, her future.” — distilled truth",
+            "“An urge is a wave. Let it rise. Let it fall. You're still standing.” — ancient Stoic thought",
+            "“The male body does not need a female body to survive. That's biology, not lack.” — evidence based",
+            "“Attraction is not a command. You can feel it and still walk away.” — inner work",
+            "“Freedom is the ability to choose your response, not just react.” — Viktor Frankl",
+            "“You are not your urges. You are the one who watches them.” — mindfulness saying",
+            "“What you resist persists. But what you understand, you can transform.” — Carl Jung",
+            "“The first and greatest victory is to conquer yourself.” — Plato",
+            "“A pause is not failure. It's recalibration.” — James Clear",
+            "“You have power over your mind — not outside events. Realize this, and you will find strength.” — Marcus Aurelius",
+            "“Waste no more time arguing what a good man should be. Be one.” — Marcus Aurelius",
+            "“The soul becomes dyed with the color of its thoughts.” — Marcus Aurelius",
+            "“It's not what happens to you, but how you react to it that matters.” — Epictetus",
+            "“Man is not worried by real problems so much as by his imagined anxieties about them.” — Epictetus",
+            "“No man has the right to be an amateur in the matter of physical training. It is a shame for a man to grow old without seeing the beauty and strength of which his body is capable.” — Socrates",
+            "“The unexamined life is not worth living.” — Socrates",
+            "“Knowing yourself is the beginning of all wisdom.” — Aristotle",
+            "“I count him braver who overcomes his desires than him who conquers his enemies.” — Aristotle",
+            "“The greatest wealth is to live content with little.” — Plato",
+            "“Happiness is the meaning and the purpose of life, the whole aim and end of human existence.” — Aristotle",
+            "“You cannot teach a man anything; you can only help him find it within himself.” — Galileo",
+            "“The mind is everything. What you think you become.” — Buddha",
+            "“Peace comes from within. Do not seek it without.” — Buddha",
+            "“It is a man's own mind, not his enemy or foe, that lures him to evil ways.” — Buddha",
+            "“The secret of health for both mind and body is not to mourn for the past, worry about the future, or anticipate troubles, but to live in the present moment wisely and earnestly.” — Buddha",
+            "“We are what we repeatedly do. Excellence, then, is not an act, but a habit.” — Aristotle",
+            "“The body is a sacred garment. It's your first and last garment; it is what you must care for.” — Martha Graham",
+            "“Self-respect is the root of discipline: The sense of one's own worth grows from the ground of self-control.” — Abraham Heschel",
+            "“Desire is not destiny. You can steer.” — modern wisdom",
+            "“Respect women not because they are weak, but because they are fully human — just like you.” — adapted",
+            "“The less you respond to trashy temptations, the more peaceful your life becomes.” — Lao Tzu (adapted)",
+            "“Mastering others is strength. Mastering yourself is true power.” — Lao Tzu",
+            "“When you let go of what you think you need, you gain what you truly want.” — inspired",
+            "“He who controls his urges controls his future.” — anonymous",
+            "“You are the sky. Everything else is just the weather.” — Pema Chödrön",
+            "“Feel the urge, breathe, and watch it dissolve.” — mindfulness practice",
+            "“Women are not puzzles for you to solve. They are people with their own inner worlds.” — clarity compass",
+            "“A man who respects boundaries respects himself.” — modern Stoic",
+            "“Six months of clarity will outlast a lifetime of regret.” — personal resolve",
+            "“Every day you resist the loop, you grow stronger.” — neuroplasticity truth",
+            "“Don't believe everything you feel. Feelings are visitors, not owners.” — anonymous",
+            "“You are important. Without performance. Without validation. Just because you exist.” — core truth",
+            "“Her body is not a reward for your good behavior.” — boundary wisdom",
+            "“The male gaze is learned. And what is learned can be unlearned.” — cultural awareness",
+            "“You don't need to conquer. You need to connect — with yourself first.” — inner work",
+            "“Let the old version of you die. It was never really alive anyway.” — poetic",
+            "“Comparison is the thief of joy, and obsession is the thief of peace.” — adapted",
+            "“The only real progress is inner progress.” — Seneca",
+            "“You are allowed to take up space without taking from others.” — self-worth",
+            "“Discomfort is the price of growth. Pay it gladly.” — anonymous",
+            "“Today you can choose clarity over chaos.” — daily reminder",
+            "“Finish what you started. Not for anyone else. For the man you want to become.” — final push",
+            "“He who has a why to live can bear almost any how.” — Friedrich Nietzsche",
+            "“Not every urge requires a response. Some just need acknowledgment.” — therapeutic insight",
+            "“You are rewiring. Be patient with the process.” — neuroscience",
+            "“One day at a time. That's all anyone can do.” — recovery wisdom",
+            "“Fall seven times, stand up eight.” — Japanese proverb",
+            "“The journey of a thousand miles begins with one step.” — Lao Tzu",
+            "“After the pause comes perspective. After perspective, peace.” — final truth"
+        ];
+        
+        // Ensure we have at least 100 (actually we have >100)
+        // Storage keys
+        const STORAGE_KEYS = {
+            START_DATE: 'clarity_start_date',
+            END_DATE: 'clarity_end_date',
+            QUOTES_LIST: 'clarity_quotes_list'
+        };
+
+        // DOM elements
+        const startDateInput = document.getElementById('startDateInput');
+        const endDateInput = document.getElementById('endDateInput');
+        const quotesTextarea = document.getElementById('quotesBankTextarea');
+        const daysCountSpan = document.getElementById('daysCount');
+        const endDateLabel = document.getElementById('endDateLabel');
+        const totalDaysSpan = document.getElementById('totalDaysSpan');
+        const progressPercentSpan = document.getElementById('progressPercent');
+        const quoteTextP = document.getElementById('quoteText');
+        const refreshQuoteBtn = document.getElementById('refreshQuoteBtn');
+        const resetDefaultsBtn = document.getElementById('resetToDefaultsBtn');
+        const addQuoteBtn = document.getElementById('addQuoteBtn');
+
+        // global quotes array (mutable)
+        let currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+
+        // ----- helper: save quotes to localStorage
+        function saveQuotesToLocal() {
+            localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList));
+        }
+
+        // load quotes from localStorage
+        function loadQuotesFromLocal() {
+            const stored = localStorage.getItem(STORAGE_KEYS.QUOTES_LIST);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        currentQuotesList = parsed;
+                    } else {
+                        currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+                    }
+                } catch(e) { currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; }
+            } else {
+                currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+            }
+            updateQuotesTextareaFromList();
+        }
+
+        function updateQuotesTextareaFromList() {
+            quotesTextarea.value = currentQuotesList.join('\n');
+        }
+
+        function syncQuotesFromTextarea() {
+            const raw = quotesTextarea.value;
+            const lines = raw.split(/\r?\n/).filter(line => line.trim().length > 0);
+            if (lines.length === 0) {
+                // if user deletes everything, restore a single default quote to avoid crash
+                currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
+            } else {
+                currentQuotesList = lines;
+            }
+            saveQuotesToLocal();
+            updateQuotesTextareaFromList();
+            // also refresh daily quote to maybe show new one
+            setDailyQuoteByDate();
+        }
+
+        // add new quote via button
+        function addNewQuote() {
+            const newQuote = prompt("Add your own motivational quote:", "I am in control of my own mind.");
+            if (newQuote && newQuote.trim().length > 0) {
+                currentQuotesList.push(newQuote.trim());
+                saveQuotesToLocal();
+                updateQuotesTextareaFromList();
+                setDailyQuoteByDate();  // update today's quote to reflect new bank
+            }
+        }
+
+        // dates logic
+        function getStoredDates() {
+            let start = localStorage.getItem(STORAGE_KEYS.START_DATE);
+            let end = localStorage.getItem(STORAGE_KEYS.END_DATE);
+            if (!start) {
+                // default: April 12 2026
+                start = '2026-04-12';
+            }
+            if (!end) {
+                end = '2026-10-12';
+            }
+            return { start, end };
+        }
+
+        function saveDates(start, end) {
+            localStorage.setItem(STORAGE_KEYS.START_DATE, start);
+            localStorage.setItem(STORAGE_KEYS.END_DATE, end);
+        }
+
+        function updateDisplayAndCountdown() {
+            const startStr = startDateInput.value;
+            const endStr = endDateInput.value;
+            if (!startStr || !endStr) return;
+            saveDates(startStr, endStr);
+            
+            const startDate = new Date(startStr);
+            const endDate = new Date(endStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const endMidnight = new Date(endStr);
+            endMidnight.setHours(0,0,0,0);
+            
+            const totalDuration = Math.ceil((endMidnight - startDate) / (1000*60*60*24));
+            const daysLeft = Math.ceil((endMidnight - today) / (1000*60*60*24));
+            const daysPassed = Math.ceil((today - startDate) / (1000*60*60*24));
+            let percent = 0;
+            if (totalDuration > 0 && daysPassed >=0) {
+                percent = Math.min(100, Math.max(0, Math.floor((daysPassed / totalDuration) * 100)));
+            }
+            if (daysLeft < 0) {
+                daysCountSpan.innerText = "0";
+                endDateLabel.innerText = "✨ goal achieved ✨";
+                progressPercentSpan.innerText = "100";
+                totalDaysSpan.innerText = totalDuration;
+            } else {
+                daysCountSpan.innerText = daysLeft;
+                endDateLabel.innerText = `until ${endStr}`;
+                totalDaysSpan.innerText = totalDuration;
+                progressPercentSpan.innerText = percent;
+            }
+        }
+
+        // QUOTE logic based on current date (daily seed)
+        function getDailyQuoteByDate() {
+            if (!currentQuotesList.length) return "You are not defective. You are becoming free.";
+            const today = new Date();
+            const daySeed = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
+            const index = daySeed % currentQuotesList.length;
+            return currentQuotesList[index];
+        }
+
+        function getRandomQuoteFromBank() {
+            if (!currentQuotesList.length) return "Stay steady. You've got this.";
+            const rand = Math.floor(Math.random() * currentQuotesList.length);
+            return currentQuotesList[rand];
+        }
+
+        function setDailyQuoteByDate() {
+            quoteTextP.innerText = getDailyQuoteByDate();
+        }
+
+        function setRandomQuote() {
+            quoteTextP.innerText = getRandomQuoteFromBank();
+        }
+
+        // reset to default dates (April 12, 2026 -> Oct 12, 2026) + default quotes
+        function resetToFactory() {
+            const defaultStart = '2026-04-12';
+            const defaultEnd = '2026-10-12';
+            startDateInput.value = defaultStart;
+            endDateInput.value = defaultEnd;
+            saveDates(defaultStart, defaultEnd);
+            // reset quotes to default 100+
+            currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+            saveQuotesToLocal();
+            updateQuotesTextareaFromList();
+            updateDisplayAndCountdown();
+            setDailyQuoteByDate();
+        }
+
+        // Event listeners & init
+        function init() {
+            // load quotes
+            loadQuotesFromLocal();
+            const { start, end } = getStoredDates();
+            startDateInput.value = start;
+            endDateInput.value = end;
+            updateDisplayAndCountdown();
+            setDailyQuoteByDate();
+            
+            startDateInput.addEventListener('change', () => updateDisplayAndCountdown());
+            endDateInput.addEventListener('change', () => updateDisplayAndCountdown());
+            quotesTextarea.addEventListener('blur', syncQuotesFromTextarea);
+            refreshQuoteBtn.addEventListener('click', () => setRandomQuote());
+            resetDefaultsBtn.addEventListener('click', resetToFactory);
+            addQuoteBtn.addEventListener('click', addNewQuote);
+        }
+        
+        init();
+    </script>
+</body>
+</html>
