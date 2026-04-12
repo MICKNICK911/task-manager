@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Clarity Compass · Daily Countdown</title>
+    <title>Clarity Compass · Color Zones + Celebration</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .days-number { font-size: clamp(3rem, 15vw, 7rem); }
+        .days-number { font-size: clamp(3rem, 15vw, 7rem); transition: all 0.3s ease; }
         .clock-red {
             font-family: 'JetBrains Mono', monospace;
             font-size: clamp(1.8rem, 8vw, 3rem);
-            color: #ef4444;
-            text-shadow: 0 0 8px rgba(239,68,68,0.4);
             letter-spacing: 4px;
             font-weight: 700;
+            transition: all 0.2s ease;
+            text-shadow: 0 0 8px currentColor;
         }
         .toggle-panel {
             transition: max-height 0.4s ease-out, opacity 0.3s ease, padding 0.2s;
@@ -49,16 +49,46 @@
             max-width: 90%;
             width: 380px;
         }
-        @keyframes pulse-red {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        /* Celebration Popup */
+        .celebration-popup {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1.3rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideUpFade 0.4s ease-out;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(255,255,255,0.3);
         }
-        .clock-container {
-            animation: pulse-red 2s ease-in-out infinite;
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        /* Particle canvas */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen p-4 md:p-6">
+
+    <canvas id="particleCanvas"></canvas>
 
     <div class="max-w-4xl mx-auto">
         <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-5 md:p-8">
@@ -87,7 +117,7 @@
                     <h2 class="text-white font-semibold text-lg flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i> customize your reset</h2>
                     <div class="flex gap-2">
                         <button id="exportDataBtn" class="text-xs bg-emerald-600/70 hover:bg-emerald-500 px-3 py-1.5 rounded-full text-white transition"><i class="fas fa-download mr-1"></i> export .json</button>
-                        <label id="importLabelBtn" class="cursor-pointer text-xs bg-sky-600/70 hover:bg-sky-500 px-3 py-1.5 rounded-full text-white transition inline-flex items-center gap-1">
+                        <label class="cursor-pointer text-xs bg-sky-600/70 hover:bg-sky-500 px-3 py-1.5 rounded-full text-white transition inline-flex items-center gap-1">
                             <i class="fas fa-upload mr-1"></i> import .json
                             <input type="file" id="importFileInput" accept=".json" class="hidden" />
                         </label>
@@ -114,20 +144,20 @@
                         <button id="addQuoteBtn" class="bg-amber-600/80 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded-full transition"><i class="fas fa-plus mr-1"></i> add new quote</button>
                     </div>
                     <textarea id="quotesBankTextarea" rows="5" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-gray-200 text-sm font-mono" placeholder="Each line = one quote. Edit or add your own..."></textarea>
-                    <p class="text-gray-400 text-[11px] mt-2"><i class="fas fa-save mr-1"></i> auto‑saves everything. One quote per line. Daily quote changes automatically.</p>
+                    <p class="text-gray-400 text-[11px] mt-2"><i class="fas fa-save mr-1"></i> auto‑saves everything. One quote per line.</p>
                 </div>
             </div>
 
             <!-- COUNTDOWN DISPLAY -->
             <div class="text-center my-4 py-2">
                 <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-1">days remaining</div>
-                <div class="days-number font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400" id="daysCount">---</div>
+                <div class="days-number font-black text-transparent bg-clip-text" id="daysCount">---</div>
                 <div class="text-gray-300 font-medium text-md mt-1" id="endDateLabel">until your goal</div>
                 
-                <!-- RED DIGITAL CLOCK (hours : minutes : seconds left TODAY) -->
+                <!-- RED DIGITAL CLOCK with dynamic color -->
                 <div class="mt-4 pt-2 border-t border-white/10">
                     <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">time left in this day</div>
-                    <div class="clock-red clock-container" id="dailyClock">00:00:00</div>
+                    <div class="clock-red" id="dailyClock">00:00:00</div>
                     <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-hourglass-start mr-1"></i> every second you choose yourself</div>
                 </div>
                 
@@ -155,18 +185,16 @@
 
             <!-- CORE REMINDERS -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-5 text-center text-xs">
-                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-female text-amber-400 mr-1"></i> <span class="text-gray-300">her body is hers</span><br><span class="text-gray-500">not a target, not a trophy</span></div>
+                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-female text-amber-400 mr-1"></i> <span class="text-gray-300">her body is hers</span><br><span class="text-gray-500">not a target</span></div>
                 <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-shield-alt text-amber-400 mr-1"></i> <span class="text-gray-300">you are not defective</span><br><span class="text-gray-500">stepping away = strength</span></div>
-                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">worth ≠ urges</span><br><span class="text-gray-500">you matter. period.</span></div>
+                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">worth ≠ urges</span><br><span class="text-gray-500">you matter</span></div>
             </div>
-            <div class="text-center text-gray-600 text-[10px] mt-6">⚡ everything saves automatically in your browser</div>
+            <div class="text-center text-gray-600 text-[10px] mt-6">⚡ everything saves automatically</div>
         </div>
     </div>
 
     <script>
-        // ------------------------------
-        // DEFAULT QUOTES BANK (100+)
-        // ------------------------------
+        // ======================== DEFAULT QUOTES (100+) ========================
         const DEFAULT_QUOTES_ARRAY = [
             "“The greatest glory in living lies not in never falling, but in rising every time we fall.” — Nelson Mandela",
             "“The way to get started is to quit talking and begin doing.” — Walt Disney",
@@ -221,37 +249,37 @@
             "“Self-respect is the root of discipline: The sense of one's own worth grows from the ground of self-control.” — Abraham Heschel",
             "“Desire is not destiny. You can steer.” — modern wisdom",
             "“Respect women not because they are weak, but because they are fully human — just like you.” — adapted",
-            "“The less you respond to trashy temptations, the more peaceful your life becomes.” — Lao Tzu (adapted)",
+            "“The less you respond to trashy temptations, the more peaceful your life becomes.” — Lao Tzu",
             "“Mastering others is strength. Mastering yourself is true power.” — Lao Tzu",
             "“When you let go of what you think you need, you gain what you truly want.” — inspired",
             "“He who controls his urges controls his future.” — anonymous",
             "“You are the sky. Everything else is just the weather.” — Pema Chödrön",
-            "“Feel the urge, breathe, and watch it dissolve.” — mindfulness practice",
-            "“Women are not puzzles for you to solve. They are people with their own inner worlds.” — clarity compass",
+            "“Feel the urge, breathe, and watch it dissolve.” — mindfulness",
+            "“Women are not puzzles for you to solve. They are people.” — clarity compass",
             "“A man who respects boundaries respects himself.” — modern Stoic",
-            "“Six months of clarity will outlast a lifetime of regret.” — personal resolve",
-            "“Every day you resist the loop, you grow stronger.” — neuroplasticity truth",
-            "“Don't believe everything you feel. Feelings are visitors, not owners.” — anonymous",
-            "“You are important. Without performance. Without validation. Just because you exist.” — core truth",
+            "“Six months of clarity will outlast a lifetime of regret.” — resolve",
+            "“Every day you resist, you grow stronger.” — neuroplasticity",
+            "“Don't believe everything you feel. Feelings are visitors.” — anonymous",
+            "“You are important. Without performance. Just because you exist.” — core truth",
             "“Her body is not a reward for your good behavior.” — boundary wisdom",
-            "“The male gaze is learned. And what is learned can be unlearned.” — cultural awareness",
-            "“You don't need to conquer. You need to connect — with yourself first.” — inner work",
-            "“Comparison is the thief of joy, and obsession is the thief of peace.” — adapted",
+            "“The male gaze is learned. And can be unlearned.” — cultural awareness",
+            "“You don't need to conquer. Connect with yourself first.” — inner work",
+            "“Comparison is the thief of joy, obsession the thief of peace.” — adapted",
             "“The only real progress is inner progress.” — Seneca",
             "“You are allowed to take up space without taking from others.” — self-worth",
             "“Discomfort is the price of growth. Pay it gladly.” — anonymous",
             "“Today you can choose clarity over chaos.” — daily reminder",
-            "“Finish what you started. Not for anyone else. For the man you want to become.” — final push",
-            "“He who has a why to live can bear almost any how.” — Friedrich Nietzsche",
-            "“Not every urge requires a response. Some just need acknowledgment.” — therapeutic insight",
-            "“You are rewiring. Be patient with the process.” — neuroscience",
-            "“One day at a time. That's all anyone can do.” — recovery wisdom",
+            "“Finish what you started. For the man you want to become.” — final push",
+            "“He who has a why can bear almost any how.” — Nietzsche",
+            "“Not every urge requires a response. Some just need acknowledgment.” — therapy insight",
+            "“You are rewiring. Be patient.” — neuroscience",
+            "“One day at a time.” — recovery wisdom",
             "“Fall seven times, stand up eight.” — Japanese proverb",
             "“The journey of a thousand miles begins with one step.” — Lao Tzu",
             "“After the pause comes perspective. After perspective, peace.” — final truth"
         ];
         
-        // Storage keys
+        // STORAGE KEYS
         const STORAGE_KEYS = {
             START_DATE: 'clarity_start_date',
             END_DATE: 'clarity_end_date',
@@ -280,24 +308,164 @@
 
         let currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
         let clockInterval = null;
+        let lastSecondTrigger = -1;
 
-        // ----- Helper: Confirmation Dialog
+        // ========== PARTICLE EFFECT ==========
+        const canvas = document.getElementById('particleCanvas');
+        let ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId = null;
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        
+        function createParticleEffect() {
+            particles = [];
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            for (let i = 0; i < 120; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 6;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                particles.push({
+                    x: centerX, y: centerY,
+                    vx: vx, vy: vy,
+                    life: 1.0,
+                    size: 4 + Math.random() * 8,
+                    color: `hsl(${40 + Math.random() * 40}, 80%, 60%)`
+                });
+            }
+            if (animationId) cancelAnimationFrame(animationId);
+            animateParticles();
+            setTimeout(() => {
+                if (animationId) cancelAnimationFrame(animationId);
+                animationId = null;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }, 1500);
+        }
+        
+        function animateParticles() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let allDead = true;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                if (p.life <= 0) continue;
+                allDead = false;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.02;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            if (!allDead) {
+                animationId = requestAnimationFrame(animateParticles);
+            } else {
+                animationId = null;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+        
+        function showCelebration() {
+            createParticleEffect();
+            const popup = document.createElement('div');
+            popup.className = 'celebration-popup';
+            popup.innerHTML = '<i class="fas fa-check-circle" style="font-size: 1.8rem;"></i> Well done! +1 day of clarity';
+            document.body.appendChild(popup);
+            setTimeout(() => {
+                popup.style.opacity = '0';
+                popup.style.transform = 'translateX(-50%) translateY(30px)';
+                popup.style.transition = 'all 0.3s ease';
+                setTimeout(() => popup.remove(), 500);
+            }, 5000);
+        }
+        
+        // ========== COLOR LOGIC ==========
+        function getDaysColor(daysLeft, totalDays) {
+            if (totalDays <= 0) return '#fbbf24';
+            const fraction = daysLeft / totalDays;
+            if (fraction <= 1/3) return '#ef4444'; // red
+            if (fraction <= 2/3) return '#eab308'; // yellow
+            return '#22c55e'; // green
+        }
+        
+        function getClockColor(secondsLeftToday) {
+            if (secondsLeftToday <= 3600) return '#ffffff'; // last hour: white
+            if (secondsLeftToday <= 8 * 3600) return '#ef4444'; // first 8h: red
+            if (secondsLeftToday <= 16 * 3600) return '#eab308'; // next 8h: yellow
+            return '#22c55e'; // remaining 7h: green
+        }
+        
+        function updateDaysColor() {
+            const endStr = endDateInput.value;
+            const startStr = startDateInput.value;
+            if (!endStr || !startStr) return;
+            const end = new Date(endStr); end.setHours(0,0,0,0);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const start = new Date(startStr); start.setHours(0,0,0,0);
+            const totalDuration = Math.ceil((end - start) / (1000*60*60*24));
+            const daysLeft = Math.ceil((end - today) / (1000*60*60*24));
+            if (totalDuration > 0 && daysLeft >= 0) {
+                const color = getDaysColor(daysLeft, totalDuration);
+                daysCountSpan.style.backgroundImage = 'none';
+                daysCountSpan.style.color = color;
+                daysCountSpan.style.textShadow = `0 0 12px ${color}80`;
+            }
+        }
+        
+        // ========== DAILY CLOCK with trigger at 00:00:00 ==========
+        function updateDailyClock() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diffMs = midnight - now;
+            if (diffMs <= 0) {
+                dailyClockSpan.innerText = "00:00:00";
+                dailyClockSpan.style.color = '#ffffff';
+                return;
+            }
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (3600000)) / 60000);
+            const seconds = Math.floor((diffMs % 60000) / 1000);
+            const totalSecs = hours * 3600 + minutes * 60 + seconds;
+            const color = getClockColor(totalSecs);
+            dailyClockSpan.style.color = color;
+            dailyClockSpan.style.textShadow = `0 0 8px ${color}80`;
+            dailyClockSpan.innerText = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+            
+            // Trigger celebration when hitting exactly 00:00:00 (just once per day)
+            if (totalSecs === 0 && lastSecondTrigger !== 0) {
+                lastSecondTrigger = 0;
+                showCelebration();
+            } else if (totalSecs > 0) {
+                lastSecondTrigger = -1;
+            }
+        }
+        
+        function startDailyClock() {
+            if (clockInterval) clearInterval(clockInterval);
+            updateDailyClock();
+            clockInterval = setInterval(updateDailyClock, 1000);
+        }
+        
+        // ========== OTHER APP LOGIC ==========
         function showConfirmDialog(message, onConfirm, onCancel) {
             const overlay = document.createElement('div');
             overlay.className = 'confirm-overlay';
-            overlay.innerHTML = `
-                <div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i>
-                        <h3 class="text-white font-bold text-lg">Confirm Action</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm mb-6">${message}</p>
-                    <div class="flex gap-3 justify-end">
-                        <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
-                        <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Proceed</button>
-                    </div>
-                </div>
-            `;
+            overlay.innerHTML = `<div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
+                <div class="flex items-center gap-3 mb-4"><i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i><h3 class="text-white font-bold text-lg">Confirm Action</h3></div>
+                <p class="text-gray-300 text-sm mb-6">${message}</p><div class="flex gap-3 justify-end">
+                <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
+                <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Proceed</button></div></div>`;
             document.body.appendChild(overlay);
             const cancelBtn = overlay.querySelector('#confirmCancelBtn');
             const okBtn = overlay.querySelector('#confirmOkBtn');
@@ -306,243 +474,73 @@
             okBtn.addEventListener('click', () => { if (onConfirm) onConfirm(); cleanup(); });
             overlay.addEventListener('click', (e) => { if (e.target === overlay) { if (onCancel) onCancel(); cleanup(); } });
         }
-
-        // ----- DIGITAL CLOCK (time remaining today)
-        function updateDailyClock() {
-            const now = new Date();
-            const midnight = new Date(now);
-            midnight.setHours(24, 0, 0, 0);
-            const diffMs = midnight - now;
-            if (diffMs <= 0) {
-                dailyClockSpan.innerText = "00:00:00";
-                return;
-            }
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (3600000)) / 60000);
-            const seconds = Math.floor((diffMs % 60000) / 1000);
-            dailyClockSpan.innerText = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-        }
         
-        function startDailyClock() {
-            if (clockInterval) clearInterval(clockInterval);
-            updateDailyClock();
-            clockInterval = setInterval(updateDailyClock, 1000);
-        }
-
-        // ----- Toggle Panel
         function togglePanel() {
             customizationPanel.classList.toggle('collapsed');
             const isCollapsed = customizationPanel.classList.contains('collapsed');
             toggleIcon.className = isCollapsed ? 'fas fa-sliders-h' : 'fas fa-times';
             toggleTextSpan.innerText = isCollapsed ? 'show settings' : 'hide settings';
         }
-
-        // ----- Quotes Helpers
-        function saveQuotesToLocal() {
-            localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList));
-        }
-
+        
+        function saveQuotesToLocal() { localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList)); }
         function loadQuotesFromLocal() {
             const stored = localStorage.getItem(STORAGE_KEYS.QUOTES_LIST);
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) currentQuotesList = parsed;
-                    else currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-                } catch(e) { currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; }
-            } else {
-                currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-            }
+            if (stored) { try { const p = JSON.parse(stored); if (Array.isArray(p) && p.length) currentQuotesList = p; else currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; } catch(e) { currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; } } 
+            else currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
             updateQuotesTextareaFromList();
         }
-
-        function updateQuotesTextareaFromList() {
-            quotesTextarea.value = currentQuotesList.join('\n');
-        }
-
+        function updateQuotesTextareaFromList() { quotesTextarea.value = currentQuotesList.join('\n'); }
         function syncQuotesFromTextarea() {
-            const lines = quotesTextarea.value.split(/\r?\n/).filter(l => l.trim().length > 0);
+            const lines = quotesTextarea.value.split(/\r?\n/).filter(l => l.trim().length);
             currentQuotesList = lines.length ? lines : ["You are not broken. Keep going. — clarity compass"];
-            saveQuotesToLocal();
-            updateQuotesTextareaFromList();
-            setDailyQuoteByDate();
+            saveQuotesToLocal(); updateQuotesTextareaFromList(); setDailyQuoteByDate();
         }
-
-        function addNewQuote() {
-            const newQuote = prompt("Add your own motivational quote:", "I am in control of my own mind.");
-            if (newQuote && newQuote.trim()) {
-                currentQuotesList.push(newQuote.trim());
-                saveQuotesToLocal();
-                updateQuotesTextareaFromList();
-                setDailyQuoteByDate();
-            }
-        }
-
-        // ----- Dates Helpers
-        function getStoredDates() {
-            let start = localStorage.getItem(STORAGE_KEYS.START_DATE);
-            let end = localStorage.getItem(STORAGE_KEYS.END_DATE);
-            if (!start) start = '2026-04-12';
-            if (!end) end = '2026-10-12';
-            return { start, end };
-        }
-
-        function saveDates(start, end) {
-            localStorage.setItem(STORAGE_KEYS.START_DATE, start);
-            localStorage.setItem(STORAGE_KEYS.END_DATE, end);
-        }
-
+        function addNewQuote() { const q = prompt("Add your own quote:", "I am in control."); if (q?.trim()) { currentQuotesList.push(q.trim()); saveQuotesToLocal(); updateQuotesTextareaFromList(); setDailyQuoteByDate(); } }
+        function getStoredDates() { let s = localStorage.getItem(STORAGE_KEYS.START_DATE), e = localStorage.getItem(STORAGE_KEYS.END_DATE); if (!s) s = '2026-04-12'; if (!e) e = '2026-10-12'; return { start: s, end: e }; }
+        function saveDates(s, e) { localStorage.setItem(STORAGE_KEYS.START_DATE, s); localStorage.setItem(STORAGE_KEYS.END_DATE, e); }
         function updateDisplayAndCountdown() {
-            const startStr = startDateInput.value;
-            const endStr = endDateInput.value;
+            const startStr = startDateInput.value, endStr = endDateInput.value;
             if (!startStr || !endStr) return;
             saveDates(startStr, endStr);
-            
-            const startDate = new Date(startStr);
-            const endDate = new Date(endStr);
-            const today = new Date(); today.setHours(0,0,0,0);
-            const endMidnight = new Date(endStr); endMidnight.setHours(0,0,0,0);
-            
-            const totalDuration = Math.ceil((endMidnight - startDate) / (1000*60*60*24));
-            const daysLeft = Math.ceil((endMidnight - today) / (1000*60*60*24));
-            const daysPassed = Math.ceil((today - startDate) / (1000*60*60*24));
+            const start = new Date(startStr), end = new Date(endStr), today = new Date(); today.setHours(0,0,0,0);
+            const endMid = new Date(endStr); endMid.setHours(0,0,0,0);
+            const total = Math.ceil((endMid - start) / 86400000);
+            const left = Math.ceil((endMid - today) / 86400000);
+            const passed = Math.ceil((today - start) / 86400000);
             let percent = 0;
-            if (totalDuration > 0 && daysPassed >= 0) percent = Math.min(100, Math.max(0, Math.floor((daysPassed / totalDuration) * 100)));
-            
-            if (daysLeft < 0) {
-                daysCountSpan.innerText = "0";
-                endDateLabel.innerText = "✨ goal achieved ✨";
-                progressPercentSpan.innerText = "100";
-                totalDaysSpan.innerText = totalDuration;
-            } else {
-                daysCountSpan.innerText = daysLeft;
-                endDateLabel.innerText = `until ${endStr}`;
-                totalDaysSpan.innerText = totalDuration;
-                progressPercentSpan.innerText = percent;
-            }
+            if (total > 0 && passed >= 0) percent = Math.min(100, Math.max(0, Math.floor((passed / total) * 100)));
+            if (left < 0) { daysCountSpan.innerText = "0"; endDateLabel.innerText = "✨ goal achieved ✨"; progressPercentSpan.innerText = "100"; totalDaysSpan.innerText = total; }
+            else { daysCountSpan.innerText = left; endDateLabel.innerText = `until ${endStr}`; totalDaysSpan.innerText = total; progressPercentSpan.innerText = percent; }
+            updateDaysColor();
         }
-
-        // ----- Quotes Display
-        function getDailyQuoteByDate() {
-            if (!currentQuotesList.length) return "You are not defective. You are becoming free.";
-            const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
-            return currentQuotesList[daySeed % currentQuotesList.length];
-        }
-
-        function getRandomQuote() {
-            if (!currentQuotesList.length) return "Stay steady. You've got this.";
-            return currentQuotesList[Math.floor(Math.random() * currentQuotesList.length)];
-        }
-
+        function getDailyQuoteByDate() { if (!currentQuotesList.length) return "You are not defective."; const seed = Math.floor(Date.now() / 86400000); return currentQuotesList[seed % currentQuotesList.length]; }
+        function getRandomQuote() { return currentQuotesList.length ? currentQuotesList[Math.floor(Math.random() * currentQuotesList.length)] : "Stay steady."; }
         function setDailyQuoteByDate() { quoteTextP.innerText = getDailyQuoteByDate(); }
         function setRandomQuote() { quoteTextP.innerText = getRandomQuote(); }
-
-        // ----- RESET with confirmation
-        function resetToFactory() {
-            showConfirmDialog(
-                "This will reset your start date, end date, and all quotes to factory defaults. Your current data will be lost. Are you sure?",
-                () => {
-                    const defaultStart = '2026-04-12';
-                    const defaultEnd = '2026-10-12';
-                    startDateInput.value = defaultStart;
-                    endDateInput.value = defaultEnd;
-                    saveDates(defaultStart, defaultEnd);
-                    currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-                    saveQuotesToLocal();
-                    updateQuotesTextareaFromList();
-                    updateDisplayAndCountdown();
-                    setDailyQuoteByDate();
-                },
-                () => {}
-            );
-        }
-
-        // ----- EXPORT
-        function exportData() {
-            const exportObj = {
-                version: "1.0",
-                exportDate: new Date().toISOString(),
-                startDate: startDateInput.value,
-                endDate: endDateInput.value,
-                quotes: currentQuotesList
-            };
-            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `clarity-compass-backup-${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // ----- IMPORT with confirmation
-        let pendingImportFile = null;
-        function performImport(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (imported.startDate && imported.endDate && Array.isArray(imported.quotes)) {
-                        startDateInput.value = imported.startDate;
-                        endDateInput.value = imported.endDate;
-                        currentQuotesList = imported.quotes.filter(q => typeof q === 'string' && q.trim().length > 0);
-                        if (!currentQuotesList.length) currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
-                        saveQuotesToLocal();
-                        updateQuotesTextareaFromList();
-                        saveDates(imported.startDate, imported.endDate);
-                        updateDisplayAndCountdown();
-                        setDailyQuoteByDate();
-                        alert("✓ Import successful! Your data has been restored.");
-                    } else {
-                        alert("Invalid file. Must contain startDate, endDate, and quotes array.");
-                    }
-                } catch(err) {
-                    alert("Error parsing JSON file. Please make sure it's a valid backup.");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function handleFileSelect(file) {
-            if (!file) return;
-            pendingImportFile = file;
-            showConfirmDialog(
-                "This will overwrite your current start date, end date, and all custom quotes. Your existing data will be lost. Are you sure?",
-                () => { performImport(pendingImportFile); pendingImportFile = null; },
-                () => { pendingImportFile = null; }
-            );
-        }
-
-        // ----- INIT
+        function resetToFactory() { showConfirmDialog("Reset to factory defaults? Your data will be lost.", () => { startDateInput.value = '2026-04-12'; endDateInput.value = '2026-10-12'; saveDates('2026-04-12','2026-10-12'); currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; saveQuotesToLocal(); updateQuotesTextareaFromList(); updateDisplayAndCountdown(); setDailyQuoteByDate(); }); }
+        function exportData() { const obj = { version:"1.0", exportDate:new Date().toISOString(), startDate:startDateInput.value, endDate:endDateInput.value, quotes:currentQuotesList }; const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `clarity-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href); }
+        let pendingFile = null;
+        function performImport(f) { const reader = new FileReader(); reader.onload = e => { try { const d = JSON.parse(e.target.result); if (d.startDate && d.endDate && Array.isArray(d.quotes)) { startDateInput.value = d.startDate; endDateInput.value = d.endDate; currentQuotesList = d.quotes.filter(q => typeof q === 'string' && q.trim()); if (!currentQuotesList.length) currentQuotesList = ["You are not broken."]; saveQuotesToLocal(); updateQuotesTextareaFromList(); saveDates(d.startDate, d.endDate); updateDisplayAndCountdown(); setDailyQuoteByDate(); alert("✓ Import successful!"); } else alert("Invalid file."); } catch(err) { alert("Error parsing JSON."); } }; reader.readAsText(f); }
+        function handleFileSelect(f) { if (!f) return; pendingFile = f; showConfirmDialog("Overwrite current data? This cannot be undone.", () => { performImport(pendingFile); pendingFile = null; }, () => { pendingFile = null; }); }
+        
         function init() {
             loadQuotesFromLocal();
             const { start, end } = getStoredDates();
-            startDateInput.value = start;
-            endDateInput.value = end;
-            updateDisplayAndCountdown();
-            setDailyQuoteByDate();
-            startDailyClock();
-            
-            startDateInput.addEventListener('change', updateDisplayAndCountdown);
-            endDateInput.addEventListener('change', updateDisplayAndCountdown);
+            startDateInput.value = start; endDateInput.value = end;
+            updateDisplayAndCountdown(); setDailyQuoteByDate(); startDailyClock();
+            startDateInput.addEventListener('change', () => { updateDisplayAndCountdown(); });
+            endDateInput.addEventListener('change', () => { updateDisplayAndCountdown(); });
             quotesTextarea.addEventListener('blur', syncQuotesFromTextarea);
             refreshQuoteBtn.addEventListener('click', setRandomQuote);
             resetDefaultsBtn.addEventListener('click', resetToFactory);
             addQuoteBtn.addEventListener('click', addNewQuote);
             togglePanelBtn.addEventListener('click', togglePanel);
             exportDataBtn.addEventListener('click', exportData);
-            importFileInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]);
-                importFileInput.value = '';
-            });
-            
+            importFileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]); importFileInput.value = ''; });
             customizationPanel.classList.add('collapsed');
-            toggleIcon.className = 'fas fa-sliders-h';
-            toggleTextSpan.innerText = 'show settings';
+            toggleIcon.className = 'fas fa-sliders-h'; toggleTextSpan.innerText = 'show settings';
+            resizeCanvas();
         }
-        
         init();
     </script>
 </body>
