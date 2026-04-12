@@ -390,20 +390,22 @@
         }
         
         // ========== COLOR LOGIC ==========
-        function getDaysColor(daysLeft, totalDays) {
-            if (totalDays <= 0) return '#fbbf24';
-            const fraction = daysLeft / totalDays;
-            if (fraction <= 1/3) return '#ef4444'; // red
-            if (fraction <= 2/3) return '#eab308'; // yellow
-            return '#22c55e'; // green
-        }
-        
-        function getClockColor(secondsLeftToday) {
-            if (secondsLeftToday <= 3600) return '#ffffff'; // last hour: white
-            if (secondsLeftToday <= 8 * 3600) return '#ef4444'; // first 8h: red
-            if (secondsLeftToday <= 16 * 3600) return '#eab308'; // next 8h: yellow
-            return '#22c55e'; // remaining 7h: green
-        }
+        // Corrected days color
+function getDaysColor(daysLeft, totalDays) {
+    if (totalDays <= 0) return '#fbbf24';
+    const fraction = daysLeft / totalDays;
+    if (fraction > 2/3) return '#ef4444'; // red: first 1/3 of journey
+    if (fraction > 1/3) return '#eab308'; // yellow: middle 1/3
+    return '#22c55e'; // green: final 1/3
+}
+
+// Corrected clock color (based on remaining seconds)
+function getClockColor(secondsLeftToday) {
+    if (secondsLeftToday > 16 * 3600) return '#ef4444'; // red: first 8h of day
+    if (secondsLeftToday > 8 * 3600) return '#eab308';  // yellow: next 8h
+    if (secondsLeftToday > 3600) return '#22c55e';      // green: next 7h
+    return '#ffffff'; // white: last hour
+}
         
         function updateDaysColor() {
             const endStr = endDateInput.value;
