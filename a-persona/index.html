@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Clarity Compass · Import/Export + Confirm</title>
+    <title>Clarity Compass · Daily Countdown</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
         .days-number { font-size: clamp(3rem, 15vw, 7rem); }
+        .clock-red {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(1.8rem, 8vw, 3rem);
+            color: #ef4444;
+            text-shadow: 0 0 8px rgba(239,68,68,0.4);
+            letter-spacing: 4px;
+            font-weight: 700;
+        }
         .toggle-panel {
             transition: max-height 0.4s ease-out, opacity 0.3s ease, padding 0.2s;
             max-height: 800px;
@@ -24,14 +32,13 @@
             border: none !important;
             overflow: hidden;
         }
-        /* custom confirmation dialog overlay */
         .confirm-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.75);
             backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
@@ -41,6 +48,13 @@
         .confirm-card {
             max-width: 90%;
             width: 380px;
+        }
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .clock-container {
+            animation: pulse-red 2s ease-in-out infinite;
         }
     </style>
 </head>
@@ -52,8 +66,8 @@
             <!-- header -->
             <div class="text-center mb-5">
                 <div class="inline-flex items-center justify-center bg-amber-500/20 rounded-full px-4 py-1.5 mb-3 border border-amber-400/40">
-                    <i class="fas fa-compass text-amber-300 mr-2 text-sm"></i>
-                    <span class="text-amber-300 text-xs font-bold tracking-wider">YOUR PACE · YOUR PATH</span>
+                    <i class="fas fa-hourglass-half text-amber-300 mr-2 text-sm"></i>
+                    <span class="text-amber-300 text-xs font-bold tracking-wider">ONE DAY AT A TIME</span>
                 </div>
                 <h1 class="text-3xl md:text-4xl font-bold text-white">clarity compass</h1>
                 <p class="text-gray-300 text-sm mt-1">a private tool for reset, focus & self-respect</p>
@@ -109,7 +123,15 @@
                 <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-1">days remaining</div>
                 <div class="days-number font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-300 to-yellow-400" id="daysCount">---</div>
                 <div class="text-gray-300 font-medium text-md mt-1" id="endDateLabel">until your goal</div>
-                <div class="text-gray-500 text-xs mt-1 flex justify-center gap-3">
+                
+                <!-- RED DIGITAL CLOCK (hours : minutes : seconds left TODAY) -->
+                <div class="mt-4 pt-2 border-t border-white/10">
+                    <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">time left in this day</div>
+                    <div class="clock-red clock-container" id="dailyClock">00:00:00</div>
+                    <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-hourglass-start mr-1"></i> every second you choose yourself</div>
+                </div>
+                
+                <div class="text-gray-500 text-xs mt-3 flex justify-center gap-3">
                     <span><i class="far fa-calendar-alt"></i> <span id="totalDaysSpan">0</span> day journey</span>
                     <span><i class="fas fa-percent"></i> <span id="progressPercent">0</span>% complete</span>
                 </div>
@@ -143,7 +165,7 @@
 
     <script>
         // ------------------------------
-        // 100+ MOTIVATIONAL QUOTES (default bank)
+        // DEFAULT QUOTES BANK (100+)
         // ------------------------------
         const DEFAULT_QUOTES_ARRAY = [
             "“The greatest glory in living lies not in never falling, but in rising every time we fall.” — Nelson Mandela",
@@ -254,23 +276,68 @@
         const toggleTextSpan = document.getElementById('toggleText');
         const exportDataBtn = document.getElementById('exportDataBtn');
         const importFileInput = document.getElementById('importFileInput');
+        const dailyClockSpan = document.getElementById('dailyClock');
 
         let currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+        let clockInterval = null;
 
-        // ----- toggle panel
+        // ----- Helper: Confirmation Dialog
+        function showConfirmDialog(message, onConfirm, onCancel) {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `
+                <div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i>
+                        <h3 class="text-white font-bold text-lg">Confirm Action</h3>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-6">${message}</p>
+                    <div class="flex gap-3 justify-end">
+                        <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
+                        <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Proceed</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            const cancelBtn = overlay.querySelector('#confirmCancelBtn');
+            const okBtn = overlay.querySelector('#confirmOkBtn');
+            const cleanup = () => overlay.remove();
+            cancelBtn.addEventListener('click', () => { if (onCancel) onCancel(); cleanup(); });
+            okBtn.addEventListener('click', () => { if (onConfirm) onConfirm(); cleanup(); });
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) { if (onCancel) onCancel(); cleanup(); } });
+        }
+
+        // ----- DIGITAL CLOCK (time remaining today)
+        function updateDailyClock() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0);
+            const diffMs = midnight - now;
+            if (diffMs <= 0) {
+                dailyClockSpan.innerText = "00:00:00";
+                return;
+            }
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (3600000)) / 60000);
+            const seconds = Math.floor((diffMs % 60000) / 1000);
+            dailyClockSpan.innerText = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        }
+        
+        function startDailyClock() {
+            if (clockInterval) clearInterval(clockInterval);
+            updateDailyClock();
+            clockInterval = setInterval(updateDailyClock, 1000);
+        }
+
+        // ----- Toggle Panel
         function togglePanel() {
             customizationPanel.classList.toggle('collapsed');
             const isCollapsed = customizationPanel.classList.contains('collapsed');
-            if (isCollapsed) {
-                toggleIcon.className = 'fas fa-sliders-h';
-                toggleTextSpan.innerText = 'show settings';
-            } else {
-                toggleIcon.className = 'fas fa-times';
-                toggleTextSpan.innerText = 'hide settings';
-            }
+            toggleIcon.className = isCollapsed ? 'fas fa-sliders-h' : 'fas fa-times';
+            toggleTextSpan.innerText = isCollapsed ? 'show settings' : 'hide settings';
         }
 
-        // ----- quotes helpers
+        // ----- Quotes Helpers
         function saveQuotesToLocal() {
             localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList));
         }
@@ -280,11 +347,8 @@
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        currentQuotesList = parsed;
-                    } else {
-                        currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-                    }
+                    if (Array.isArray(parsed) && parsed.length > 0) currentQuotesList = parsed;
+                    else currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
                 } catch(e) { currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; }
             } else {
                 currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
@@ -297,13 +361,8 @@
         }
 
         function syncQuotesFromTextarea() {
-            const raw = quotesTextarea.value;
-            const lines = raw.split(/\r?\n/).filter(line => line.trim().length > 0);
-            if (lines.length === 0) {
-                currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
-            } else {
-                currentQuotesList = lines;
-            }
+            const lines = quotesTextarea.value.split(/\r?\n/).filter(l => l.trim().length > 0);
+            currentQuotesList = lines.length ? lines : ["You are not broken. Keep going. — clarity compass"];
             saveQuotesToLocal();
             updateQuotesTextareaFromList();
             setDailyQuoteByDate();
@@ -311,7 +370,7 @@
 
         function addNewQuote() {
             const newQuote = prompt("Add your own motivational quote:", "I am in control of my own mind.");
-            if (newQuote && newQuote.trim().length > 0) {
+            if (newQuote && newQuote.trim()) {
                 currentQuotesList.push(newQuote.trim());
                 saveQuotesToLocal();
                 updateQuotesTextareaFromList();
@@ -319,7 +378,7 @@
             }
         }
 
-        // dates helpers
+        // ----- Dates Helpers
         function getStoredDates() {
             let start = localStorage.getItem(STORAGE_KEYS.START_DATE);
             let end = localStorage.getItem(STORAGE_KEYS.END_DATE);
@@ -341,18 +400,15 @@
             
             const startDate = new Date(startStr);
             const endDate = new Date(endStr);
-            const today = new Date();
-            today.setHours(0,0,0,0);
-            const endMidnight = new Date(endStr);
-            endMidnight.setHours(0,0,0,0);
+            const today = new Date(); today.setHours(0,0,0,0);
+            const endMidnight = new Date(endStr); endMidnight.setHours(0,0,0,0);
             
             const totalDuration = Math.ceil((endMidnight - startDate) / (1000*60*60*24));
             const daysLeft = Math.ceil((endMidnight - today) / (1000*60*60*24));
             const daysPassed = Math.ceil((today - startDate) / (1000*60*60*24));
             let percent = 0;
-            if (totalDuration > 0 && daysPassed >=0) {
-                percent = Math.min(100, Math.max(0, Math.floor((daysPassed / totalDuration) * 100)));
-            }
+            if (totalDuration > 0 && daysPassed >= 0) percent = Math.min(100, Math.max(0, Math.floor((daysPassed / totalDuration) * 100)));
+            
             if (daysLeft < 0) {
                 daysCountSpan.innerText = "0";
                 endDateLabel.innerText = "✨ goal achieved ✨";
@@ -366,40 +422,39 @@
             }
         }
 
-        // quote selection
+        // ----- Quotes Display
         function getDailyQuoteByDate() {
             if (!currentQuotesList.length) return "You are not defective. You are becoming free.";
-            const today = new Date();
-            const daySeed = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
-            const index = daySeed % currentQuotesList.length;
-            return currentQuotesList[index];
+            const daySeed = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+            return currentQuotesList[daySeed % currentQuotesList.length];
         }
 
-        function getRandomQuoteFromBank() {
+        function getRandomQuote() {
             if (!currentQuotesList.length) return "Stay steady. You've got this.";
-            const rand = Math.floor(Math.random() * currentQuotesList.length);
-            return currentQuotesList[rand];
+            return currentQuotesList[Math.floor(Math.random() * currentQuotesList.length)];
         }
 
-        function setDailyQuoteByDate() {
-            quoteTextP.innerText = getDailyQuoteByDate();
-        }
+        function setDailyQuoteByDate() { quoteTextP.innerText = getDailyQuoteByDate(); }
+        function setRandomQuote() { quoteTextP.innerText = getRandomQuote(); }
 
-        function setRandomQuote() {
-            quoteTextP.innerText = getRandomQuoteFromBank();
-        }
-
+        // ----- RESET with confirmation
         function resetToFactory() {
-            const defaultStart = '2026-04-12';
-            const defaultEnd = '2026-10-12';
-            startDateInput.value = defaultStart;
-            endDateInput.value = defaultEnd;
-            saveDates(defaultStart, defaultEnd);
-            currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-            saveQuotesToLocal();
-            updateQuotesTextareaFromList();
-            updateDisplayAndCountdown();
-            setDailyQuoteByDate();
+            showConfirmDialog(
+                "This will reset your start date, end date, and all quotes to factory defaults. Your current data will be lost. Are you sure?",
+                () => {
+                    const defaultStart = '2026-04-12';
+                    const defaultEnd = '2026-10-12';
+                    startDateInput.value = defaultStart;
+                    endDateInput.value = defaultEnd;
+                    saveDates(defaultStart, defaultEnd);
+                    currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
+                    saveQuotesToLocal();
+                    updateQuotesTextareaFromList();
+                    updateDisplayAndCountdown();
+                    setDailyQuoteByDate();
+                },
+                () => {}
+            );
         }
 
         // ----- EXPORT
@@ -411,8 +466,7 @@
                 endDate: endDateInput.value,
                 quotes: currentQuotesList
             };
-            const jsonStr = JSON.stringify(exportObj, null, 2);
-            const blob = new Blob([jsonStr], { type: "application/json" });
+            const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -423,55 +477,8 @@
             URL.revokeObjectURL(url);
         }
 
-        // ----- CUSTOM CONFIRMATION DIALOG for import
-        function showConfirmDialog(message, onConfirm, onCancel) {
-            // create overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'confirm-overlay';
-            overlay.innerHTML = `
-                <div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
-                    <div class="flex items-center gap-3 mb-4">
-                        <i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i>
-                        <h3 class="text-white font-bold text-lg">Confirm Import</h3>
-                    </div>
-                    <p class="text-gray-300 text-sm mb-6">${message}</p>
-                    <div class="flex gap-3 justify-end">
-                        <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
-                        <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Import</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
-            
-            const cancelBtn = overlay.querySelector('#confirmCancelBtn');
-            const okBtn = overlay.querySelector('#confirmOkBtn');
-            
-            const cleanup = () => {
-                overlay.remove();
-            };
-            
-            cancelBtn.addEventListener('click', () => {
-                if (onCancel) onCancel();
-                cleanup();
-            });
-            
-            okBtn.addEventListener('click', () => {
-                if (onConfirm) onConfirm();
-                cleanup();
-            });
-            
-            // click outside to cancel
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    if (onCancel) onCancel();
-                    cleanup();
-                }
-            });
-        }
-
-        // actual import logic (called after confirmation)
+        // ----- IMPORT with confirmation
         let pendingImportFile = null;
-        
         function performImport(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -481,7 +488,7 @@
                         startDateInput.value = imported.startDate;
                         endDateInput.value = imported.endDate;
                         currentQuotesList = imported.quotes.filter(q => typeof q === 'string' && q.trim().length > 0);
-                        if (currentQuotesList.length === 0) currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
+                        if (!currentQuotesList.length) currentQuotesList = ["You are not broken. Keep going. — clarity compass"];
                         saveQuotesToLocal();
                         updateQuotesTextareaFromList();
                         saveDates(imported.startDate, imported.endDate);
@@ -503,25 +510,12 @@
             pendingImportFile = file;
             showConfirmDialog(
                 "This will overwrite your current start date, end date, and all custom quotes. Your existing data will be lost. Are you sure?",
-                () => {
-                    performImport(pendingImportFile);
-                    pendingImportFile = null;
-                },
-                () => {
-                    pendingImportFile = null;
-                }
+                () => { performImport(pendingImportFile); pendingImportFile = null; },
+                () => { pendingImportFile = null; }
             );
         }
 
-        // attach import listener with confirmation
-        importFileInput.addEventListener('change', (e) => {
-            if (e.target.files && e.target.files[0]) {
-                handleFileSelect(e.target.files[0]);
-            }
-            importFileInput.value = ''; // allow re-upload same file later
-        });
-
-        // ----- init
+        // ----- INIT
         function init() {
             loadQuotesFromLocal();
             const { start, end } = getStoredDates();
@@ -529,15 +523,20 @@
             endDateInput.value = end;
             updateDisplayAndCountdown();
             setDailyQuoteByDate();
+            startDailyClock();
             
-            startDateInput.addEventListener('change', () => updateDisplayAndCountdown());
-            endDateInput.addEventListener('change', () => updateDisplayAndCountdown());
+            startDateInput.addEventListener('change', updateDisplayAndCountdown);
+            endDateInput.addEventListener('change', updateDisplayAndCountdown);
             quotesTextarea.addEventListener('blur', syncQuotesFromTextarea);
-            refreshQuoteBtn.addEventListener('click', () => setRandomQuote());
+            refreshQuoteBtn.addEventListener('click', setRandomQuote);
             resetDefaultsBtn.addEventListener('click', resetToFactory);
             addQuoteBtn.addEventListener('click', addNewQuote);
             togglePanelBtn.addEventListener('click', togglePanel);
             exportDataBtn.addEventListener('click', exportData);
+            importFileInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]);
+                importFileInput.value = '';
+            });
             
             customizationPanel.classList.add('collapsed');
             toggleIcon.className = 'fas fa-sliders-h';
