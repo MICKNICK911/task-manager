@@ -3,335 +3,364 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Your Life Clock </title>
+    <title>Your Life Clock · Memento Mori</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .clock-digits {
+        .life-digits {
             font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(1.6rem, 6vw, 2.5rem);
-            font-weight: 700;
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            font-weight: 800;
             letter-spacing: 2px;
         }
-        .progress-bar {
-            transition: width 0.5s ease;
+        .heartbeat {
+            animation: pulseRed 1.2s ease-in-out infinite;
         }
-        .quote-card {
-            transition: all 0.2s ease;
+        @keyframes pulseRed {
+            0% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; }
+            50% { color: #ff6666; text-shadow: 0 0 12px #ef4444; opacity: 1; }
+            100% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; }
         }
+        .progress-bar { transition: width 0.5s ease; }
+        .quote-card { transition: all 0.2s; }
+        input, select { background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
+        input:focus, select:focus { outline: none; border-color: #f59e0b; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
 
-    <div class="max-w-3xl w-full mx-auto">
-        <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
-            
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
-                    <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
-                    <span class="text-red-300 text-xs font-bold tracking-wider">MEMENTO MORI · REMEMBER YOU WILL DIE</span>
-                </div>
-                <h1 class="text-3xl md:text-4xl font-bold text-white">your life clock</h1>
-                <p class="text-gray-300 text-sm mt-1">the only currency that matters is time</p>
+<div class="max-w-4xl w-full mx-auto">
+    <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
+
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
+                <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
+                <span class="text-red-300 text-xs font-bold tracking-wider">MEMENTO MORI · REMEMBER YOU WILL DIE</span>
             </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white">your life clock</h1>
+            <p class="text-gray-300 text-sm mt-1">every second is a choice. choose wisely.</p>
+        </div>
 
-            <!-- Settings panel -->
-            <div class="bg-black/30 rounded-2xl p-4 mb-6 border border-white/10">
-                <div class="flex flex-wrap gap-4 items-end justify-between">
-                    <div class="flex-1 min-w-[160px]">
-                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">your birth date</label>
-                        <input type="date" id="birthDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
-                        <p class="text-gray-500 text-[10px] mt-1">or use age below</p>
-                    </div>
-                    <div class="flex-1 min-w-[120px]">
-                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">or current age (years)</label>
-                        <input type="number" id="ageInput" value="30" step="1" min="0" max="120" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
-                    </div>
-                    <div class="flex-1 min-w-[120px]">
-                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">expected lifespan (years)</label>
-                        <input type="number" id="lifespanInput" value="80" step="1" min="1" max="120" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
-                    </div>
-                    <div>
-                        <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update</button>
-                    </div>
+        <!-- Input panel -->
+        <div class="bg-black/30 rounded-2xl p-5 mb-6 border border-white/10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div>
+                    <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">year of birth</label>
+                    <input type="number" id="birthYearInput" value="1996" min="1900" max="2026" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm">
+                    <p class="text-gray-500 text-[10px] mt-1">e.g., 1996</p>
                 </div>
-                <p class="text-gray-400 text-[10px] mt-3 text-center"><i class="fas fa-info-circle mr-1"></i> This is an estimate. Use it to inspire action, not anxiety.</p>
-            </div>
-
-            <!-- Life clock display -->
-            <div class="text-center my-4">
-                <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-2">time remaining</div>
-                <div class="clock-digits text-white bg-black/40 inline-block px-6 py-3 rounded-2xl border border-white/10" id="remainingDisplay">-- yrs -- mo -- days -- hrs -- min -- sec</div>
-                
-                <!-- Progress bar -->
-                <div class="mt-6 mb-4">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>birth</span>
-                        <span id="percentUsed">0</span>
-                        <span>death (est.)</span>
-                    </div>
-                    <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
-                        <div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div>
-                    </div>
-                </div>
-
-                <!-- Color legend -->
-                <div class="flex justify-center gap-4 text-[10px] text-gray-400 mt-2">
-                    <span><i class="fas fa-circle text-green-500"></i> >50% left</span>
-                    <span><i class="fas fa-circle text-yellow-500"></i> 25-50%</span>
-                    <span><i class="fas fa-circle text-red-500"></i> <25% left</span>
+                <div>
+                    <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">or current age (years)</label>
+                    <input type="number" id="ageInput" value="30" min="0" max="120" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm">
                 </div>
             </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">month of birth</label>
+                    <select id="birthMonthSelect" class="w-full rounded-xl px-3 py-2 text-white text-sm">
+                        <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                        <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                        <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                        <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+                    </select>
+                    <p class="text-gray-500 text-[10px] mt-1">day is always the 1st</p>
+                </div>
+                <div>
+                    <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">expected lifespan (years)</label>
+                    <input type="number" id="lifespanInput" value="80" min="1" max="120" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm">
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update clock</button>
+            </div>
+            <p class="text-gray-400 text-[10px] text-center mt-3"><i class="fas fa-info-circle mr-1"></i> uses exact calendar (leap years, real month lengths). day assumed = 1st.</p>
+        </div>
 
-            <!-- Motivational quote -->
+        <!-- REMAINING TIME: Years · Months · Days (prominent) -->
+        <div class="text-center my-4">
+            <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-2">time remaining</div>
+            <div class="life-digits text-white bg-black/40 inline-block px-6 py-4 rounded-2xl border border-white/10" id="mainRemaining">--y --m --d</div>
+
+            <!-- Progress bar -->
             <div class="mt-6 mb-4">
-                <div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400 quote-card">
-                    <div class="flex items-start gap-3">
-                        <i class="fas fa-skull text-amber-400 text-2xl mt-1"></i>
-                        <div class="flex-1">
-                            <p class="text-white text-md md:text-lg italic leading-relaxed" id="quoteText">loading...</p>
-                            <div class="flex justify-between items-center mt-3">
-                                <span class="text-gray-500 text-xs"><i class="far fa-hourglass-half"></i> memento mori</span>
-                                <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> another reminder</button>
-                            </div>
+                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>birth (1st of month)</span>
+                    <span id="percentUsed">0% used</span>
+                    <span>death (est.)</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                    <div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- Hours · Minutes · Seconds with red heartbeat -->
+            <div class="mt-4 pt-2 border-t border-white/20">
+                <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">hours · minutes · seconds</div>
+                <div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="hmsDisplay">00:00:00</div>
+                <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-heartbeat text-red-400 mr-1"></i> every heartbeat reminds you: time is finite</div>
+            </div>
+        </div>
+
+        <!-- Motivational quote -->
+        <div class="mt-6 mb-4">
+            <div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400 quote-card">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-skull text-amber-400 text-2xl mt-1"></i>
+                    <div class="flex-1">
+                        <p class="text-white text-md md:text-lg italic leading-relaxed" id="quoteText">loading...</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-gray-500 text-xs"><i class="far fa-hourglass-half"></i> memento mori</span>
+                            <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> another reminder</button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Core reminders -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs mt-4">
-                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-hourglass-start text-amber-400 mr-1"></i> <span class="text-gray-300">life is brief</span><br><span class="text-gray-500">don't waste it on triviality</span></div>
-                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-seedling text-amber-400 mr-1"></i> <span class="text-gray-300">act now</span><br><span class="text-gray-500">tomorrow is not promised</span></div>
-                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">choose wisely</span><br><span class="text-gray-500">spend time on what matters</span></div>
-            </div>
-            <div class="text-center text-gray-600 text-[10px] mt-6">⏳ you are here: a tiny dot in infinity. make it count.</div>
         </div>
+
+        <!-- Core reminders -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs mt-4">
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-hourglass-start text-amber-400 mr-1"></i> <span class="text-gray-300">life is brief</span><br><span class="text-gray-500">don't waste it</span></div>
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-seedling text-amber-400 mr-1"></i> <span class="text-gray-300">act now</span><br><span class="text-gray-500">tomorrow may never come</span></div>
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">choose wisely</span><br><span class="text-gray-500">spend time on what matters</span></div>
+        </div>
+        <div class="text-center text-gray-600 text-[10px] mt-6">⏳ you are here: a tiny dot in infinity. make it count.</div>
     </div>
+</div>
 
-    <script>
-        // DOM elements
-        const birthDateInput = document.getElementById('birthDateInput');
-        const ageInput = document.getElementById('ageInput');
-        const lifespanInput = document.getElementById('lifespanInput');
-        const updateBtn = document.getElementById('updateBtn');
-        const remainingDisplay = document.getElementById('remainingDisplay');
-        const lifeProgressBar = document.getElementById('lifeProgressBar');
-        const percentUsedSpan = document.getElementById('percentUsed');
-        const quoteText = document.getElementById('quoteText');
-        const refreshQuoteBtn = document.getElementById('refreshQuoteBtn');
+<script>
+    // DOM elements
+    const birthYearInput = document.getElementById('birthYearInput');
+    const ageInput = document.getElementById('ageInput');
+    const birthMonthSelect = document.getElementById('birthMonthSelect');
+    const lifespanInput = document.getElementById('lifespanInput');
+    const updateBtn = document.getElementById('updateBtn');
+    const mainRemainingSpan = document.getElementById('mainRemaining');
+    const hmsDisplay = document.getElementById('hmsDisplay');
+    const lifeProgressBar = document.getElementById('lifeProgressBar');
+    const percentUsedSpan = document.getElementById('percentUsed');
+    const quoteText = document.getElementById('quoteText');
+    const refreshQuoteBtn = document.getElementById('refreshQuoteBtn');
 
-        // Quotes about mortality, time, and making decisions
-        const mortalityQuotes = [
-            "You could leave life right now. Let that determine what you do, say, and think. — Marcus Aurelius",
-            "It is not that we have a short time to live, but that we waste a lot of it. — Seneca",
-            "Let us prepare our minds as if we’d come to the very end of life. Let us postpone nothing. — Seneca",
-            "Remembering you are going to die is the best way I know to avoid the trap of thinking you have something to lose. — Steve Jobs",
-            "The trouble is, you think you have time. — Buddha",
-            "Live as if you were living already for the second time and had acted as wrongly the first time. — Viktor Frankl",
-            "Death smiles at us all; all a man can do is smile back. — Marcus Aurelius",
-            "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. — Marcus Aurelius",
-            "Every hour is a stroke of the chisel carving away at the marble of your life. Make it a masterpiece.",
-            "Time is the only non-renewable resource. Spend it like the precious currency it is.",
-            "The graveyards are full of indispensable people. You are not irreplaceable. That's freedom.",
-            "What would you do today if you knew you had only one year left? Now do that, but spread it out.",
-            "You are going to die. So am I. The question is: what will you do with the dash between the dates?",
-            "Don't count the days. Make the days count. — Muhammad Ali",
-            "Life is not measured by the number of breaths we take, but by the moments that take our breath away.",
-            "The fear of death follows from the fear of life. A man who lives fully is prepared to die at any time. — Mark Twain",
-            "In the face of death, petty obsessions fall away. What remains? Love, purpose, kindness, truth.",
-            "You don't have to be perfect. You just have to be present.",
-            "Every second you spend scrolling, worrying, or obsessing is a second you never get back.",
-            "The clock is ticking. Not to frighten you, but to wake you.",
-            "You are not your urges. You are the chooser. Choose what honors your brief time here.",
-            "Imagine looking back from your deathbed. What regrets would you have? Avoid them now.",
-            "A man who knows he will die is free from the tyranny of trivial desires.",
-            "Memento mori: remember death. Not as a curse, but as a reminder to live authentically.",
-            "You have exactly enough time for what matters most. Stop wasting the rest.",
-            "No one on their deathbed wishes they had spent more time in compulsive loops.",
-            "The window of action is now. Later may never come.",
-            "You are not too old, too late, or too broken. You are here. That's enough.",
-            "This moment is all you have ever had. All you will ever have. Use it.",
-            "Death is the ultimate editor. It cuts out everything that doesn't matter.",
-            "If you want to change your life, start before you feel ready. The clock won't wait.",
-            "You are mortal. That's not sad. That's what gives every choice weight.",
-            "One day you will close your eyes for the last time. What story will you have written?",
-            "The only true failure is failing to live by your own values before time runs out.",
-            "Do not be afraid of death. Be afraid of not having truly lived."
-        ];
+    // Quotes (mortality & action)
+    const mortalityQuotes = [
+        "You could leave life right now. Let that determine what you do, say, and think. — Marcus Aurelius",
+        "It is not that we have a short time to live, but that we waste a lot of it. — Seneca",
+        "Let us prepare our minds as if we’d come to the very end of life. Let us postpone nothing. — Seneca",
+        "Remembering you are going to die is the best way to avoid the trap of thinking you have something to lose. — Steve Jobs",
+        "The trouble is, you think you have time. — Buddha",
+        "Live as if you were living already for the second time and had acted as wrongly the first time. — Viktor Frankl",
+        "Death smiles at us all; all a man can do is smile back. — Marcus Aurelius",
+        "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. — Marcus Aurelius",
+        "The graveyards are full of indispensable people. You are not irreplaceable. That's freedom.",
+        "Time is the only non-renewable resource. Spend it like the precious currency it is.",
+        "What would you do today if you knew you had only one year left? Now do that, but spread it out.",
+        "You are going to die. So am I. The question is: what will you do with the dash between the dates?",
+        "Don't count the days. Make the days count. — Muhammad Ali",
+        "In the face of death, petty obsessions fall away. What remains? Love, purpose, kindness, truth.",
+        "You are not your urges. You are the chooser. Choose what honors your brief time here.",
+        "Memento mori: remember death. Not as a curse, but as a reminder to live authentically.",
+        "No one on their deathbed wishes they had spent more time in compulsive loops.",
+        "The window of action is now. Later may never come.",
+        "You are mortal. That's not sad. That's what gives every choice weight.",
+        "One day you will close your eyes for the last time. What story will you have written?"
+    ];
 
-        let currentAgeYears = 30;
-        let lifespan = 80;
-        let totalLifeSeconds = lifespan * 365.25 * 24 * 3600;
-        let birthDate = null;
-        let updateInterval = null;
+    let currentBirthDate = null;    // Date object (day = 1)
+    let deathDate = null;
+    let totalLifespanMs = 0;
+    let updateInterval = null;
 
-        // Helper: get current age in years from birth date
-        function getAgeFromBirthDate(birthDateObj) {
-            const today = new Date();
-            let age = today.getFullYear() - birthDateObj.getFullYear();
-            const m = today.getMonth() - birthDateObj.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
-                age--;
-            }
-            return age;
-        }
+    // Helper: sync age <-> birth year
+    function syncAgeFromBirth() {
+        let year = parseInt(birthYearInput.value);
+        let month = parseInt(birthMonthSelect.value);
+        if (isNaN(year)) year = 1996;
+        let birth = new Date(year, month, 1);
+        let today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        let m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+        if (age >= 0) ageInput.value = age;
+        else ageInput.value = 0;
+    }
 
-        // Calculate remaining time and update display
-        function updateLifeClock() {
-            let now = new Date();
-            let ageSec = 0;
-            let totalSec = lifespan * 365.25 * 24 * 3600;
-            
-            if (birthDate && !isNaN(birthDate.getTime())) {
-                let ageYears = getAgeFromBirthDate(birthDate);
-                currentAgeYears = ageYears;
-                ageInput.value = ageYears;
-                let birthTimestamp = birthDate.getTime();
-                let nowTimestamp = now.getTime();
-                ageSec = (nowTimestamp - birthTimestamp) / 1000;
-            } else {
-                // use age input
-                currentAgeYears = parseFloat(ageInput.value) || 0;
-                ageSec = currentAgeYears * 365.25 * 24 * 3600;
-            }
-            
-            totalLifeSeconds = lifespan * 365.25 * 24 * 3600;
-            let remainingSec = totalLifeSeconds - ageSec;
-            if (remainingSec < 0) remainingSec = 0;
-            
-            // Compute remaining components
-            let remainingYears = remainingSec / (365.25 * 24 * 3600);
-            let years = Math.floor(remainingYears);
-            let remainingAfterYears = remainingSec - (years * 365.25 * 24 * 3600);
-            let months = Math.floor(remainingAfterYears / (30.44 * 24 * 3600));
-            let remainingAfterMonths = remainingAfterYears - (months * 30.44 * 24 * 3600);
-            let days = Math.floor(remainingAfterMonths / (24 * 3600));
-            let remainingAfterDays = remainingAfterMonths - (days * 24 * 3600);
-            let hours = Math.floor(remainingAfterDays / 3600);
-            let remainingAfterHours = remainingAfterDays - (hours * 3600);
-            let minutes = Math.floor(remainingAfterHours / 60);
-            let seconds = Math.floor(remainingAfterHours % 60);
-            
-            remainingDisplay.innerHTML = `${years}y ${months}m ${days}d ${hours}h ${minutes}m ${seconds}s`;
-            
-            // Progress bar percentage of life used
-            let percentUsed = (ageSec / totalLifeSeconds) * 100;
-            if (percentUsed > 100) percentUsed = 100;
-            if (percentUsed < 0) percentUsed = 0;
-            percentUsedSpan.innerText = `${percentUsed.toFixed(1)}% used`;
-            lifeProgressBar.style.width = `${percentUsed}%`;
-            
-            // Change progress bar color based on remaining percentage
-            let remainingPercent = 100 - percentUsed;
-            if (remainingPercent > 50) lifeProgressBar.style.background = "linear-gradient(90deg, #22c55e, #eab308)";
-            else if (remainingPercent > 25) lifeProgressBar.style.background = "linear-gradient(90deg, #eab308, #ef4444)";
-            else lifeProgressBar.style.background = "linear-gradient(90deg, #ef4444, #991b1b)";
-            
-            // Also pulse red if less than 5% remaining?
-            if (remainingPercent < 5) {
-                document.getElementById('remainingDisplay').classList.add('animate-pulse');
-            } else {
-                document.getElementById('remainingDisplay').classList.remove('animate-pulse');
-            }
+    function syncBirthFromAge() {
+        let age = parseInt(ageInput.value);
+        let month = parseInt(birthMonthSelect.value);
+        if (isNaN(age)) age = 30;
+        let today = new Date();
+        let birthYear = today.getFullYear() - age;
+        // adjust if birthday hasn't occurred yet this year
+        let testBirth = new Date(birthYear, month, 1);
+        let currentAge = today.getFullYear() - testBirth.getFullYear();
+        let m = today.getMonth() - testBirth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < testBirth.getDate())) currentAge--;
+        if (currentAge !== age) {
+            birthYear--;
+        }
+        birthYearInput.value = birthYear;
+    }
+
+    // Compute exact remaining time components using calendar math
+    function getRemainingComponents(death, now) {
+        // returns object { years, months, days, hours, minutes, seconds }
+        if (now >= death) return { years:0, months:0, days:0, hours:0, minutes:0, seconds:0 };
+        
+        let years = death.getFullYear() - now.getFullYear();
+        let months = death.getMonth() - now.getMonth();
+        let days = death.getDate() - now.getDate();
+        
+        if (days < 0) {
+            months--;
+            let prevMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            days += prevMonth;
+        }
+        if (months < 0) {
+            years--;
+            months += 12;
         }
         
-        // Sync birth date from age or vice versa
-        function syncFromAge() {
-            let age = parseFloat(ageInput.value);
-            if (isNaN(age)) age = 30;
-            let today = new Date();
-            let birthYear = today.getFullYear() - age;
-            let birthMonth = today.getMonth();
-            let birthDay = today.getDate();
-            let estimatedBirth = new Date(birthYear, birthMonth, birthDay);
-            birthDateInput.value = estimatedBirth.toISOString().slice(0,10);
-            birthDate = estimatedBirth;
+        let hours = death.getHours() - now.getHours();
+        let minutes = death.getMinutes() - now.getMinutes();
+        let seconds = death.getSeconds() - now.getSeconds();
+        
+        if (seconds < 0) { seconds += 60; minutes--; }
+        if (minutes < 0) { minutes += 60; hours--; }
+        if (hours < 0) { hours += 24; days--; }
+        if (days < 0) {
+            let prevMonthDate = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+            days += prevMonthDate;
+            months--;
+            if (months < 0) { months += 12; years--; }
+        }
+        
+        return { years, months, days, hours, minutes, seconds };
+    }
+    
+    // Update the entire display
+    function updateLifeClock() {
+        if (!currentBirthDate || !deathDate) return;
+        const now = new Date();
+        const remaining = getRemainingComponents(deathDate, now);
+        
+        // Main display: years, months, days (prominent)
+        mainRemainingSpan.innerHTML = `${remaining.years}y ${remaining.months}m ${remaining.days}d`;
+        
+        // Hours, minutes, seconds with heartbeat effect
+        hmsDisplay.innerHTML = `${String(remaining.hours).padStart(2,'0')}:${String(remaining.minutes).padStart(2,'0')}:${String(remaining.seconds).padStart(2,'0')}`;
+        
+        // Progress bar & color logic for main digits
+        const totalMs = totalLifespanMs;
+        const elapsedMs = now - currentBirthDate;
+        let percentUsed = (elapsedMs / totalMs) * 100;
+        if (percentUsed > 100) percentUsed = 100;
+        if (percentUsed < 0) percentUsed = 0;
+        percentUsedSpan.innerText = `${percentUsed.toFixed(1)}% used`;
+        lifeProgressBar.style.width = `${percentUsed}%`;
+        
+        // Change color of main remaining digits based on % remaining
+        const percentRemaining = 100 - percentUsed;
+        let color = "#22c55e"; // green
+        if (percentRemaining < 25) color = "#ef4444"; // red
+        else if (percentRemaining < 50) color = "#eab308"; // yellow
+        mainRemainingSpan.style.color = color;
+        mainRemainingSpan.style.textShadow = `0 0 8px ${color}80`;
+        
+        // If time is up, show message
+        if (remaining.years === 0 && remaining.months === 0 && remaining.days === 0 && remaining.hours === 0 && remaining.minutes === 0 && remaining.seconds === 0) {
+            mainRemainingSpan.innerHTML = "0y 0m 0d";
+            hmsDisplay.innerHTML = "00:00:00";
+        }
+    }
+    
+    // Recalculate birth & death dates from inputs
+    function recalculateDates() {
+        let birthYear = parseInt(birthYearInput.value);
+        let monthIndex = parseInt(birthMonthSelect.value);
+        let lifespan = parseInt(lifespanInput.value);
+        if (isNaN(birthYear)) birthYear = 1996;
+        if (isNaN(lifespan)) lifespan = 80;
+        
+        // Day is always 1st
+        currentBirthDate = new Date(birthYear, monthIndex, 1, 0, 0, 0, 0);
+        // Death date: same month/day (1st) after lifespan years
+        deathDate = new Date(birthYear + lifespan, monthIndex, 1, 0, 0, 0, 0);
+        
+        // Total lifespan in milliseconds (exact)
+        totalLifespanMs = deathDate - currentBirthDate;
+        
+        // Sync age field
+        let today = new Date();
+        let age = today.getFullYear() - currentBirthDate.getFullYear();
+        let m = today.getMonth() - currentBirthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < currentBirthDate.getDate())) age--;
+        ageInput.value = age >= 0 ? age : 0;
+        
+        updateLifeClock();
+    }
+    
+    // Event handlers
+    function handleYearOrAgeChange() {
+        // If year field changed, sync age
+        syncAgeFromBirth();
+        recalculateDates();
+    }
+    
+    function handleAgeChange() {
+        syncBirthFromAge();
+        recalculateDates();
+    }
+    
+    function handleMonthChange() {
+        recalculateDates();
+    }
+    
+    function handleLifespanChange() {
+        recalculateDates();
+    }
+    
+    // Quote randomizer
+    function getRandomQuote() {
+        return mortalityQuotes[Math.floor(Math.random() * mortalityQuotes.length)];
+    }
+    function setRandomQuote() {
+        quoteText.innerText = getRandomQuote();
+    }
+    
+    // Auto tick every second
+    function startTicker() {
+        if (updateInterval) clearInterval(updateInterval);
+        updateInterval = setInterval(() => {
             updateLifeClock();
-        }
-        
-        function syncFromBirthDate() {
-            let dateStr = birthDateInput.value;
-            if (dateStr) {
-                let parsed = new Date(dateStr);
-                if (!isNaN(parsed.getTime())) {
-                    birthDate = parsed;
-                    let ageNow = getAgeFromBirthDate(birthDate);
-                    ageInput.value = ageNow;
-                    currentAgeYears = ageNow;
-                    updateLifeClock();
-                }
-            }
-        }
-        
-        function updateAll() {
-            lifespan = parseFloat(lifespanInput.value);
-            if (isNaN(lifespan)) lifespan = 80;
-            if (birthDateInput.value) {
-                syncFromBirthDate();
-            } else {
-                syncFromAge();
-            }
-            updateLifeClock();
-        }
-        
-        // Quote handling
-        function getRandomQuote() {
-            return mortalityQuotes[Math.floor(Math.random() * mortalityQuotes.length)];
-        }
-        
-        function setRandomQuote() {
-            quoteText.innerText = getRandomQuote();
-        }
-        
-        // Auto-refresh every second
-        function startTicker() {
-            if (updateInterval) clearInterval(updateInterval);
-            updateInterval = setInterval(() => {
-                updateLifeClock();
-            }, 1000);
-        }
-        
-        // Event listeners
-        updateBtn.addEventListener('click', () => {
-            lifespan = parseFloat(lifespanInput.value);
-            if (birthDateInput.value) syncFromBirthDate();
-            else syncFromAge();
-            updateLifeClock();
-            setRandomQuote();
-        });
-        
-        birthDateInput.addEventListener('change', () => {
-            syncFromBirthDate();
-            updateLifeClock();
-        });
-        
-        ageInput.addEventListener('change', () => {
-            syncFromAge();
-            updateLifeClock();
-        });
-        
-        refreshQuoteBtn.addEventListener('click', setRandomQuote);
-        
-        // Initialize
-        function init() {
-            // Default: age 30, lifespan 80
-            let defaultBirth = new Date();
-            defaultBirth.setFullYear(defaultBirth.getFullYear() - 30);
-            birthDateInput.value = defaultBirth.toISOString().slice(0,10);
-            birthDate = defaultBirth;
-            ageInput.value = 30;
-            lifespanInput.value = 80;
-            lifespan = 80;
-            updateLifeClock();
-            setRandomQuote();
-            startTicker();
-        }
-        
-        init();
-    </script>
+        }, 1000);
+    }
+    
+    // Attach listeners
+    birthYearInput.addEventListener('input', handleYearOrAgeChange);
+    ageInput.addEventListener('input', handleAgeChange);
+    birthMonthSelect.addEventListener('change', handleMonthChange);
+    lifespanInput.addEventListener('input', handleLifespanChange);
+    updateBtn.addEventListener('click', () => {
+        recalculateDates();
+        setRandomQuote();
+    });
+    refreshQuoteBtn.addEventListener('click', setRandomQuote);
+    
+    // Initialize
+    function init() {
+        // default: year 1996, month April (3), age 30, lifespan 80
+        birthYearInput.value = 1996;
+        ageInput.value = 30;
+        birthMonthSelect.value = "3"; // April (0-index)
+        lifespanInput.value = 80;
+        recalculateDates();
+        setRandomQuote();
+        startTicker();
+    }
+    init();
+</script>
 </body>
 </html>
