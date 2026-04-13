@@ -15,7 +15,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .life-digits { font-family: 'JetBrains Mono', monospace; font-size: clamp(1.8rem, 8vw, 3.5rem); font-weight: 800; letter-spacing: 2px; }
+        .life-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(2rem, 10vw, 4rem);
+            font-weight: 800;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+        .life-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: #9ca3af;
+            margin-top: 4px;
+        }
         .heartbeat { animation: pulseRed 1.2s ease-in-out infinite; }
         @keyframes pulseRed { 0% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; } 50% { color: #ff6666; text-shadow: 0 0 12px #ef4444; opacity: 1; } 100% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; } }
         .progress-bar { transition: width 0.5s ease; }
@@ -45,7 +59,7 @@
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
                 <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
-                <span class="text-red-300 text-xs font-bold tracking-wider">MEMENTO MORI · REMEMBER YOU WILL DIE</span>
+                <span class="text-red-300 text-xs font-bold tracking-wider">HARD TRUTH · YOU WILL DIE ONE DAY</span>
             </div>
             <h1 class="text-3xl md:text-4xl font-bold text-white">Hard Truth</h1>
             <p class="text-gray-300 text-sm mt-1">you will die one day. use your time wisely.</p>
@@ -73,19 +87,64 @@
             <p class="text-gray-400 text-[10px] text-center mt-3"><i class="fas fa-info-circle mr-1"></i> uses exact calendar (leap years, real month lengths). day assumed = 1st.</p>
         </div>
 
-        <!-- REMAINING TIME -->
+        <!-- REMAINING TIME: years, months, days with labels underneath -->
         <div class="text-center my-4">
             <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-2">time remaining</div>
-            <div class="life-digits text-white bg-black/40 inline-block px-6 py-4 rounded-2xl border border-white/10" id="mainRemaining">--y --m --d</div>
-            <div class="mt-6 mb-4"><div class="flex justify-between text-xs text-gray-400 mb-1"><span>birth (1st of month)</span><span id="percentUsed">0% used</span><span>death (est.)</span></div><div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden"><div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div></div></div>
-            <div class="mt-4 pt-2 border-t border-white/20"><div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">hours · minutes · seconds</div><div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="hmsDisplay">00:00:00</div><div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-heartbeat text-red-400 mr-1"></i> every heartbeat reminds you: time is finite</div></div>
+            <div class="flex justify-center items-center gap-6 md:gap-12 flex-wrap bg-black/40 rounded-2xl py-6 px-4 border border-white/10">
+                <div class="text-center">
+                    <div class="life-number" id="yearsNumber">--</div>
+                    <div class="life-label">years</div>
+                </div>
+                <div class="text-center">
+                    <div class="life-number" id="monthsNumber">--</div>
+                    <div class="life-label">months</div>
+                </div>
+                <div class="text-center">
+                    <div class="life-number" id="daysNumber">--</div>
+                    <div class="life-label">days</div>
+                </div>
+            </div>
+
+            <div class="mt-6 mb-4">
+                <div class="flex justify-between text-xs text-gray-400 mb-1">
+                    <span>birth (1st of month)</span>
+                    <span id="percentUsed">0% used</span>
+                    <span>death (est.)</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                    <div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-2 border-t border-white/20">
+                <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">hours · minutes · seconds</div>
+                <div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="hmsDisplay">00:00:00</div>
+                <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-heartbeat text-red-400 mr-1"></i> every heartbeat reminds you: time is finite</div>
+            </div>
         </div>
 
         <!-- QUOTE SECTION -->
-        <div class="mt-6 mb-4"><div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400"><div class="flex items-start gap-3"><i class="fas fa-skull text-amber-400 text-2xl mt-1"></i><div class="flex-1"><p class="text-white text-md md:text-lg italic leading-relaxed" id="quoteText">loading...</p><div class="flex justify-between items-center mt-3"><span class="text-gray-500 text-xs"><i class="far fa-hourglass-half"></i> memento mori</span><button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> another reminder</button></div></div></div></div></div>
+        <div class="mt-6 mb-4">
+            <div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-skull text-amber-400 text-2xl mt-1"></i>
+                    <div class="flex-1">
+                        <p class="text-white text-md md:text-lg italic leading-relaxed" id="quoteText">loading...</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-gray-500 text-xs"><i class="far fa-hourglass-half"></i> hard truth</span>
+                            <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> another reminder</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- CORE REMINDERS -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs mt-4"><div class="bg-white/5 rounded-xl p-2"><i class="fas fa-hourglass-start text-amber-400 mr-1"></i> <span class="text-gray-300">life is brief</span><br><span class="text-gray-500">don't waste it</span></div><div class="bg-white/5 rounded-xl p-2"><i class="fas fa-seedling text-amber-400 mr-1"></i> <span class="text-gray-300">act now</span><br><span class="text-gray-500">tomorrow may never come</span></div><div class="bg-white/5 rounded-xl p-2"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">choose wisely</span><br><span class="text-gray-500">spend time on what matters</span></div></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs mt-4">
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-hourglass-start text-amber-400 mr-1"></i> <span class="text-gray-300">life is brief</span><br><span class="text-gray-500">don't waste it</span></div>
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-seedling text-amber-400 mr-1"></i> <span class="text-gray-300">act now</span><br><span class="text-gray-500">tomorrow may never come</span></div>
+            <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">choose wisely</span><br><span class="text-gray-500">spend time on what matters</span></div>
+        </div>
         <div class="text-center text-gray-600 text-[10px] mt-6">⏳ you are here: a tiny dot in infinity. make it count.</div>
     </div>
 </div>
@@ -206,7 +265,9 @@
     const birthMonthSelect = document.getElementById('birthMonthSelect');
     const lifespanInput = document.getElementById('lifespanInput');
     const updateBtn = document.getElementById('updateBtn');
-    const mainRemainingSpan = document.getElementById('mainRemaining');
+    const yearsSpan = document.getElementById('yearsNumber');
+    const monthsSpan = document.getElementById('monthsNumber');
+    const daysSpan = document.getElementById('daysNumber');
     const hmsDisplay = document.getElementById('hmsDisplay');
     const lifeProgressBar = document.getElementById('lifeProgressBar');
     const percentUsedSpan = document.getElementById('percentUsed');
@@ -279,7 +340,9 @@
         if (!currentBirthDate || !deathDate) return;
         const now = new Date();
         const remaining = getRemainingComponents(deathDate, now);
-        mainRemainingSpan.innerHTML = `${remaining.years}y ${remaining.months}m ${remaining.days}d`;
+        yearsSpan.innerText = remaining.years;
+        monthsSpan.innerText = remaining.months;
+        daysSpan.innerText = remaining.days;
         hmsDisplay.innerHTML = `${String(remaining.hours).padStart(2,'0')}:${String(remaining.minutes).padStart(2,'0')}:${String(remaining.seconds).padStart(2,'0')}`;
         const elapsedMs = now - currentBirthDate;
         let percentUsed = (elapsedMs / totalLifespanMs) * 100;
@@ -291,10 +354,13 @@
         let color = "#22c55e";
         if (percentRemaining < 25) color = "#ef4444";
         else if (percentRemaining < 50) color = "#eab308";
-        mainRemainingSpan.style.color = color;
-        mainRemainingSpan.style.textShadow = `0 0 8px ${color}80`;
+        // apply color to all three number spans
+        [yearsSpan, monthsSpan, daysSpan].forEach(span => {
+            span.style.color = color;
+            span.style.textShadow = `0 0 8px ${color}80`;
+        });
         if (remaining.years === 0 && remaining.months === 0 && remaining.days === 0 && remaining.hours === 0 && remaining.minutes === 0 && remaining.seconds === 0) {
-            mainRemainingSpan.innerHTML = "0y 0m 0d";
+            yearsSpan.innerText = "0"; monthsSpan.innerText = "0"; daysSpan.innerText = "0";
             hmsDisplay.innerHTML = "00:00:00";
         }
     }
