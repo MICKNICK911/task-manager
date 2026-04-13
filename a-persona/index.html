@@ -59,7 +59,7 @@
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
                 <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
-                <span class="text-red-300 text-xs font-bold tracking-wider">HARD TRUTH · YOU WILL DIE ONE DAY</span>
+                <span class="text-red-300 text-xs font-bold tracking-wider">TRUTH · YOU WILL DIE ONE DAY</span>
             </div>
         </div>
 
@@ -67,7 +67,7 @@
         <div class="flex justify-center mb-3">
             <button id="toggleSettingsBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
                 <i class="fas fa-cog" id="toggleIcon"></i>
-                <span id="toggleText">Know Your Time</span>
+                <span id="toggleText">Know Your Time Left</span>
             </button>
         </div>
 
@@ -281,6 +281,30 @@
     let totalLifespanMs = 0;
     let updateInterval = null;
 
+    // ---------- PERSISTENCE ----------
+    function saveSettings() {
+        const settings = {
+            birthYear: birthYearInput.value,
+            birthMonth: birthMonthSelect.value,
+            lifespan: lifespanInput.value
+        };
+        localStorage.setItem('hardTruthSettings', JSON.stringify(settings));
+    }
+
+    function loadSettings() {
+        const saved = localStorage.getItem('hardTruthSettings');
+        if (saved) {
+            try {
+                const settings = JSON.parse(saved);
+                if (settings.birthYear) birthYearInput.value = settings.birthYear;
+                if (settings.birthMonth) birthMonthSelect.value = settings.birthMonth;
+                if (settings.lifespan) lifespanInput.value = settings.lifespan;
+            } catch(e) { console.warn("Failed to load settings"); }
+        }
+        // Also sync age from birth year
+        syncAgeFromBirth();
+    }
+
     // Toggle settings panel
     function toggleSettings() {
         settingsPanel.classList.toggle('collapsed');
@@ -352,7 +376,6 @@
         let color = "#22c55e";
         if (percentRemaining < 25) color = "#ef4444";
         else if (percentRemaining < 50) color = "#eab308";
-        // apply color to all three number spans
         [yearsSpan, monthsSpan, daysSpan].forEach(span => {
             span.style.color = color;
             span.style.textShadow = `0 0 8px ${color}80`;
@@ -378,6 +401,7 @@
         if (m < 0 || (m === 0 && today.getDate() < currentBirthDate.getDate())) age--;
         ageInput.value = age >= 0 ? age : 0;
         updateLifeClock();
+        saveSettings(); // persist after recalc
     }
 
     function getRandomQuote() { return QUOTES[Math.floor(Math.random() * QUOTES.length)]; }
@@ -385,6 +409,7 @@
 
     function startTicker() { if (updateInterval) clearInterval(updateInterval); updateInterval = setInterval(updateLifeClock, 1000); }
 
+    // Event listeners
     birthYearInput.addEventListener('input', () => { syncAgeFromBirth(); recalculateDates(); });
     ageInput.addEventListener('input', () => { syncBirthFromAge(); recalculateDates(); });
     birthMonthSelect.addEventListener('change', recalculateDates);
@@ -393,8 +418,10 @@
     refreshQuoteBtn.addEventListener('click', setRandomQuote);
 
     function init() {
-        birthYearInput.value = 1996; ageInput.value = 30; birthMonthSelect.value = "3"; lifespanInput.value = 80;
-        recalculateDates(); setRandomQuote(); startTicker();
+        loadSettings();  // Load saved settings first
+        recalculateDates(); // This will also save settings if any changed
+        setRandomQuote();
+        startTicker();
     }
     init();
 
