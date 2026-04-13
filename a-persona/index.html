@@ -3,546 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Clarity Compass · Color Zones + Celebration</title>
+    <title>Your Life Clock </title>
     <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .days-number { font-size: clamp(3rem, 15vw, 7rem); transition: all 0.3s ease; }
-        .clock-red {
+        .clock-digits {
             font-family: 'JetBrains Mono', monospace;
-            font-size: clamp(1.8rem, 8vw, 3rem);
-            letter-spacing: 4px;
+            font-size: clamp(1.6rem, 6vw, 2.5rem);
             font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        .quote-card {
             transition: all 0.2s ease;
-            text-shadow: 0 0 8px currentColor;
-        }
-        .toggle-panel {
-            transition: max-height 0.4s ease-out, opacity 0.3s ease, padding 0.2s;
-            max-height: 800px;
-            opacity: 1;
-            overflow: hidden;
-        }
-        .toggle-panel.collapsed {
-            max-height: 0;
-            opacity: 0;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
-            overflow: hidden;
-        }
-        .confirm-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.75);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .confirm-card {
-            max-width: 90%;
-            width: 380px;
-        }
-        /* Celebration Popup */
-        .celebration-popup {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            padding: 14px 28px;
-            border-radius: 60px;
-            font-weight: bold;
-            font-size: 1.3rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1001;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideUpFade 0.4s ease-out;
-            font-family: 'Inter', sans-serif;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        /* Particle canvas */
-        #particleCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 999;
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 min-h-screen p-4 md:p-6">
+<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
 
-    <canvas id="particleCanvas"></canvas>
-
-    <div class="max-w-4xl mx-auto">
-        <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-5 md:p-8">
+    <div class="max-w-3xl w-full mx-auto">
+        <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
             
-            <!-- header -->
-            <div class="text-center mb-5">
-                <div class="inline-flex items-center justify-center bg-amber-500/20 rounded-full px-4 py-1.5 mb-3 border border-amber-400/40">
-                    <i class="fas fa-hourglass-half text-amber-300 mr-2 text-sm"></i>
-                    <span class="text-amber-300 text-xs font-bold tracking-wider">ONE DAY AT A TIME</span>
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
+                    <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
+                    <span class="text-red-300 text-xs font-bold tracking-wider">MEMENTO MORI · REMEMBER YOU WILL DIE</span>
                 </div>
-                <h1 class="text-3xl md:text-4xl font-bold text-white">clarity compass</h1>
-                <p class="text-gray-300 text-sm mt-1">a private tool for reset, focus & self-respect</p>
+                <h1 class="text-3xl md:text-4xl font-bold text-white">your life clock</h1>
+                <p class="text-gray-300 text-sm mt-1">the only currency that matters is time</p>
             </div>
 
-            <!-- TOGGLE BUTTON -->
-            <div class="flex justify-center mb-3">
-                <button id="togglePanelBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
-                    <i class="fas fa-sliders-h" id="toggleIcon"></i> 
-                    <span id="toggleText">show settings</span>
-                </button>
-            </div>
-
-            <!-- CUSTOMIZATION PANEL (collapsible) -->
-            <div id="customizationPanel" class="toggle-panel collapsed bg-black/30 rounded-2xl p-5 mb-8 border border-white/10">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                    <h2 class="text-white font-semibold text-lg flex items-center gap-2"><i class="fas fa-edit text-amber-400"></i> customize your reset</h2>
-                    <div class="flex gap-2">
-                        <button id="exportDataBtn" class="text-xs bg-emerald-600/70 hover:bg-emerald-500 px-3 py-1.5 rounded-full text-white transition"><i class="fas fa-download mr-1"></i> export .json</button>
-                        <label class="cursor-pointer text-xs bg-sky-600/70 hover:bg-sky-500 px-3 py-1.5 rounded-full text-white transition inline-flex items-center gap-1">
-                            <i class="fas fa-upload mr-1"></i> import .json
-                            <input type="file" id="importFileInput" accept=".json" class="hidden" />
-                        </label>
-                        <button id="resetToDefaultsBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-gray-300 transition"><i class="fas fa-undo-alt mr-1"></i> reset</button>
+            <!-- Settings panel -->
+            <div class="bg-black/30 rounded-2xl p-4 mb-6 border border-white/10">
+                <div class="flex flex-wrap gap-4 items-end justify-between">
+                    <div class="flex-1 min-w-[160px]">
+                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">your birth date</label>
+                        <input type="date" id="birthDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
+                        <p class="text-gray-500 text-[10px] mt-1">or use age below</p>
                     </div>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                    <div>
-                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">start date</label>
-                        <input type="date" id="startDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-400">
-                        <p class="text-gray-500 text-[11px] mt-1">when your journey began</p>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">or current age (years)</label>
+                        <input type="number" id="ageInput" value="30" step="1" min="0" max="120" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
+                    </div>
+                    <div class="flex-1 min-w-[120px]">
+                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">expected lifespan (years)</label>
+                        <input type="number" id="lifespanInput" value="80" step="1" min="1" max="120" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 text-white text-sm">
                     </div>
                     <div>
-                        <label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">end date (goal)</label>
-                        <input type="date" id="endDateInput" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-400">
-                        <p class="text-gray-500 text-[11px] mt-1">your target finish line</p>
+                        <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-4 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update</button>
+                    </div>
+                </div>
+                <p class="text-gray-400 text-[10px] mt-3 text-center"><i class="fas fa-info-circle mr-1"></i> This is an estimate. Use it to inspire action, not anxiety.</p>
+            </div>
+
+            <!-- Life clock display -->
+            <div class="text-center my-4">
+                <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-2">time remaining</div>
+                <div class="clock-digits text-white bg-black/40 inline-block px-6 py-3 rounded-2xl border border-white/10" id="remainingDisplay">-- yrs -- mo -- days -- hrs -- min -- sec</div>
+                
+                <!-- Progress bar -->
+                <div class="mt-6 mb-4">
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>birth</span>
+                        <span id="percentUsed">0</span>
+                        <span>death (est.)</span>
+                    </div>
+                    <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden">
+                        <div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <div class="border-t border-white/10 pt-4 mt-2">
-                    <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
-                        <label class="text-gray-300 text-xs uppercase tracking-wider flex items-center gap-2"><i class="fas fa-quote-left text-amber-400"></i> motivational quotes bank</label>
-                        <button id="addQuoteBtn" class="bg-amber-600/80 hover:bg-amber-500 text-white text-xs px-3 py-1.5 rounded-full transition"><i class="fas fa-plus mr-1"></i> add new quote</button>
-                    </div>
-                    <textarea id="quotesBankTextarea" rows="5" class="w-full bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 text-gray-200 text-sm font-mono" placeholder="Each line = one quote. Edit or add your own..."></textarea>
-                    <p class="text-gray-400 text-[11px] mt-2"><i class="fas fa-save mr-1"></i> auto‑saves everything. One quote per line.</p>
+                <!-- Color legend -->
+                <div class="flex justify-center gap-4 text-[10px] text-gray-400 mt-2">
+                    <span><i class="fas fa-circle text-green-500"></i> >50% left</span>
+                    <span><i class="fas fa-circle text-yellow-500"></i> 25-50%</span>
+                    <span><i class="fas fa-circle text-red-500"></i> <25% left</span>
                 </div>
             </div>
 
-            <!-- COUNTDOWN DISPLAY -->
-            <div class="text-center my-4 py-2">
-                <div class="text-gray-400 uppercase tracking-wider text-xs font-semibold mb-1">days remaining</div>
-                <div class="days-number font-black text-transparent bg-clip-text" id="daysCount">---</div>
-                <div class="text-gray-300 font-medium text-md mt-1" id="endDateLabel">until your goal</div>
-                
-                <!-- RED DIGITAL CLOCK with dynamic color -->
-                <div class="mt-4 pt-2 border-t border-white/10">
-                    <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">time left in this day</div>
-                    <div class="clock-red" id="dailyClock">00:00:00</div>
-                    <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-hourglass-start mr-1"></i> every second you choose yourself</div>
-                </div>
-                
-                <div class="text-gray-500 text-xs mt-3 flex justify-center gap-3">
-                    <span><i class="far fa-calendar-alt"></i> <span id="totalDaysSpan">0</span> day journey</span>
-                    <span><i class="fas fa-percent"></i> <span id="progressPercent">0</span>% complete</span>
-                </div>
-            </div>
-
-            <!-- QUOTE CARD -->
-            <div class="mt-6 mb-5">
-                <div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400 shadow-md">
+            <!-- Motivational quote -->
+            <div class="mt-6 mb-4">
+                <div class="bg-white/5 rounded-2xl p-5 border-l-4 border-amber-400 quote-card">
                     <div class="flex items-start gap-3">
-                        <i class="fas fa-feather-alt text-amber-400 text-2xl mt-1"></i>
+                        <i class="fas fa-skull text-amber-400 text-2xl mt-1"></i>
                         <div class="flex-1">
-                            <p class="text-white text-lg md:text-xl italic leading-relaxed" id="quoteText">loading wisdom...</p>
-                            <div class="flex justify-between items-center mt-4">
-                                <span class="text-gray-500 text-xs"><i class="far fa-clock"></i> today's anchor</span>
-                                <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> shuffle quote</button>
+                            <p class="text-white text-md md:text-lg italic leading-relaxed" id="quoteText">loading...</p>
+                            <div class="flex justify-between items-center mt-3">
+                                <span class="text-gray-500 text-xs"><i class="far fa-hourglass-half"></i> memento mori</span>
+                                <button id="refreshQuoteBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition"><i class="fas fa-sync-alt mr-1"></i> another reminder</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- CORE REMINDERS -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-5 text-center text-xs">
-                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-female text-amber-400 mr-1"></i> <span class="text-gray-300">her body is hers</span><br><span class="text-gray-500">not a target</span></div>
-                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-shield-alt text-amber-400 mr-1"></i> <span class="text-gray-300">you are not defective</span><br><span class="text-gray-500">stepping away = strength</span></div>
-                <div class="bg-white/5 rounded-xl p-2.5"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">worth ≠ urges</span><br><span class="text-gray-500">you matter</span></div>
+            <!-- Core reminders -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs mt-4">
+                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-hourglass-start text-amber-400 mr-1"></i> <span class="text-gray-300">life is brief</span><br><span class="text-gray-500">don't waste it on triviality</span></div>
+                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-seedling text-amber-400 mr-1"></i> <span class="text-gray-300">act now</span><br><span class="text-gray-500">tomorrow is not promised</span></div>
+                <div class="bg-white/5 rounded-xl p-2"><i class="fas fa-heart text-amber-400 mr-1"></i> <span class="text-gray-300">choose wisely</span><br><span class="text-gray-500">spend time on what matters</span></div>
             </div>
-            <div class="text-center text-gray-600 text-[10px] mt-6">⚡ everything saves automatically</div>
+            <div class="text-center text-gray-600 text-[10px] mt-6">⏳ you are here: a tiny dot in infinity. make it count.</div>
         </div>
     </div>
 
     <script>
-        // ======================== DEFAULT QUOTES (100+) ========================
-        const DEFAULT_QUOTES_ARRAY = [
-            "“The greatest glory in living lies not in never falling, but in rising every time we fall.” — Nelson Mandela",
-            "“The way to get started is to quit talking and begin doing.” — Walt Disney",
-            "“Your time is limited, don't waste it living someone else's life.” — Steve Jobs",
-            "“It is during our darkest moments that we must focus to see the light.” — Aristotle",
-            "“You will face many defeats in life, but never let yourself be defeated.” — Maya Angelou",
-            "“Happiness is not something ready made. It comes from your own actions.” — Dalai Lama",
-            "“The only limit to our realization of tomorrow is our doubts of today.” — Franklin D. Roosevelt",
-            "“What lies behind us and what lies before us are tiny matters compared to what lies within us.” — Ralph Waldo Emerson",
-            "“Try not to become a man of success, but rather become a man of value.” — Albert Einstein",
-            "“It's not whether you get knocked down, it's whether you get up.” — Vince Lombardi",
-            "“We must accept finite disappointment, but never lose infinite hope.” — Martin Luther King Jr.",
-            "“Do not go where the path may lead, go instead where there is no path and leave a trail.” — Ralph Waldo Emerson",
-            "“You are never too old to set another goal or to dream a new dream.” — C.S. Lewis",
-            "“Believe you can and you're halfway there.” — Theodore Roosevelt",
-            "“Everything you've ever wanted is on the other side of fear.” — George Addair",
-            "“Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time.” — Thomas Edison",
-            "“The secret of getting ahead is getting started.” — Mark Twain",
-            "“Don't watch the clock; do what it does. Keep going.” — Sam Levenson",
-            "“Discipline is choosing between what you want now and what you want most.” — Abraham Lincoln",
-            "“A man who conquers himself is greater than one who conquers a city.” — Confucius",
-            "“No man is free who is not master of himself.” — Epictetus",
-            "“Strength does not come from physical capacity. It comes from an indomitable will.” — Mahatma Gandhi",
-            "“The best revenge is massive success.” — Frank Sinatra",
-            "“Don't count the days, make the days count.” — Muhammad Ali",
-            "“The pain of discipline is far less than the pain of regret.” — Sarah Bombell",
-            "“She is not a destination. You are not a predator.” — clarity compass",
-            "“Her body exists for her life — her breath, her walk, her future.” — distilled truth",
-            "“An urge is a wave. Let it rise. Let it fall. You're still standing.” — ancient Stoic thought",
-            "“The male body does not need a female body to survive. That's biology, not lack.” — evidence based",
-            "“Attraction is not a command. You can feel it and still walk away.” — inner work",
-            "“Freedom is the ability to choose your response, not just react.” — Viktor Frankl",
-            "“You are not your urges. You are the one who watches them.” — mindfulness saying",
-            "“What you resist persists. But what you understand, you can transform.” — Carl Jung",
-            "“The first and greatest victory is to conquer yourself.” — Plato",
-            "“A pause is not failure. It's recalibration.” — James Clear",
-            "“You have power over your mind — not outside events. Realize this, and you will find strength.” — Marcus Aurelius",
-            "“Waste no more time arguing what a good man should be. Be one.” — Marcus Aurelius",
-            "“The soul becomes dyed with the color of its thoughts.” — Marcus Aurelius",
-            "“It's not what happens to you, but how you react to it that matters.” — Epictetus",
-            "“Man is not worried by real problems so much as by his imagined anxieties about them.” — Epictetus",
-            "“No man has the right to be an amateur in the matter of physical training. It is a shame for a man to grow old without seeing the beauty and strength of which his body is capable.” — Socrates",
-            "“The unexamined life is not worth living.” — Socrates",
-            "“Knowing yourself is the beginning of all wisdom.” — Aristotle",
-            "“I count him braver who overcomes his desires than him who conquers his enemies.” — Aristotle",
-            "“The greatest wealth is to live content with little.” — Plato",
-            "“The mind is everything. What you think you become.” — Buddha",
-            "“Peace comes from within. Do not seek it without.” — Buddha",
-            "“It is a man's own mind, not his enemy or foe, that lures him to evil ways.” — Buddha",
-            "“The secret of health for both mind and body is not to mourn for the past, worry about the future, or anticipate troubles, but to live in the present moment wisely and earnestly.” — Buddha",
-            "“We are what we repeatedly do. Excellence, then, is not an act, but a habit.” — Aristotle",
-            "“Self-respect is the root of discipline: The sense of one's own worth grows from the ground of self-control.” — Abraham Heschel",
-            "“Desire is not destiny. You can steer.” — modern wisdom",
-            "“Respect women not because they are weak, but because they are fully human — just like you.” — adapted",
-            "“The less you respond to trashy temptations, the more peaceful your life becomes.” — Lao Tzu",
-            "“Mastering others is strength. Mastering yourself is true power.” — Lao Tzu",
-            "“When you let go of what you think you need, you gain what you truly want.” — inspired",
-            "“He who controls his urges controls his future.” — anonymous",
-            "“You are the sky. Everything else is just the weather.” — Pema Chödrön",
-            "“Feel the urge, breathe, and watch it dissolve.” — mindfulness",
-            "“Women are not puzzles for you to solve. They are people.” — clarity compass",
-            "“A man who respects boundaries respects himself.” — modern Stoic",
-            "“Six months of clarity will outlast a lifetime of regret.” — resolve",
-            "“Every day you resist, you grow stronger.” — neuroplasticity",
-            "“Don't believe everything you feel. Feelings are visitors.” — anonymous",
-            "“You are important. Without performance. Just because you exist.” — core truth",
-            "“Her body is not a reward for your good behavior.” — boundary wisdom",
-            "“The male gaze is learned. And can be unlearned.” — cultural awareness",
-            "“You don't need to conquer. Connect with yourself first.” — inner work",
-            "“Comparison is the thief of joy, obsession the thief of peace.” — adapted",
-            "“The only real progress is inner progress.” — Seneca",
-            "“You are allowed to take up space without taking from others.” — self-worth",
-            "“Discomfort is the price of growth. Pay it gladly.” — anonymous",
-            "“Today you can choose clarity over chaos.” — daily reminder",
-            "“Finish what you started. For the man you want to become.” — final push",
-            "“He who has a why can bear almost any how.” — Nietzsche",
-            "“Not every urge requires a response. Some just need acknowledgment.” — therapy insight",
-            "“You are rewiring. Be patient.” — neuroscience",
-            "“One day at a time.” — recovery wisdom",
-            "“Fall seven times, stand up eight.” — Japanese proverb",
-            "“The journey of a thousand miles begins with one step.” — Lao Tzu",
-            "“After the pause comes perspective. After perspective, peace.” — final truth"
-        ];
-        
-        // STORAGE KEYS
-        const STORAGE_KEYS = {
-            START_DATE: 'clarity_start_date',
-            END_DATE: 'clarity_end_date',
-            QUOTES_LIST: 'clarity_quotes_list'
-        };
-
         // DOM elements
-        const startDateInput = document.getElementById('startDateInput');
-        const endDateInput = document.getElementById('endDateInput');
-        const quotesTextarea = document.getElementById('quotesBankTextarea');
-        const daysCountSpan = document.getElementById('daysCount');
-        const endDateLabel = document.getElementById('endDateLabel');
-        const totalDaysSpan = document.getElementById('totalDaysSpan');
-        const progressPercentSpan = document.getElementById('progressPercent');
-        const quoteTextP = document.getElementById('quoteText');
+        const birthDateInput = document.getElementById('birthDateInput');
+        const ageInput = document.getElementById('ageInput');
+        const lifespanInput = document.getElementById('lifespanInput');
+        const updateBtn = document.getElementById('updateBtn');
+        const remainingDisplay = document.getElementById('remainingDisplay');
+        const lifeProgressBar = document.getElementById('lifeProgressBar');
+        const percentUsedSpan = document.getElementById('percentUsed');
+        const quoteText = document.getElementById('quoteText');
         const refreshQuoteBtn = document.getElementById('refreshQuoteBtn');
-        const resetDefaultsBtn = document.getElementById('resetToDefaultsBtn');
-        const addQuoteBtn = document.getElementById('addQuoteBtn');
-        const togglePanelBtn = document.getElementById('togglePanelBtn');
-        const customizationPanel = document.getElementById('customizationPanel');
-        const toggleIcon = document.getElementById('toggleIcon');
-        const toggleTextSpan = document.getElementById('toggleText');
-        const exportDataBtn = document.getElementById('exportDataBtn');
-        const importFileInput = document.getElementById('importFileInput');
-        const dailyClockSpan = document.getElementById('dailyClock');
 
-        let currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-        let clockInterval = null;
-        let lastSecondTrigger = -1;
+        // Quotes about mortality, time, and making decisions
+        const mortalityQuotes = [
+            "You could leave life right now. Let that determine what you do, say, and think. — Marcus Aurelius",
+            "It is not that we have a short time to live, but that we waste a lot of it. — Seneca",
+            "Let us prepare our minds as if we’d come to the very end of life. Let us postpone nothing. — Seneca",
+            "Remembering you are going to die is the best way I know to avoid the trap of thinking you have something to lose. — Steve Jobs",
+            "The trouble is, you think you have time. — Buddha",
+            "Live as if you were living already for the second time and had acted as wrongly the first time. — Viktor Frankl",
+            "Death smiles at us all; all a man can do is smile back. — Marcus Aurelius",
+            "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. — Marcus Aurelius",
+            "Every hour is a stroke of the chisel carving away at the marble of your life. Make it a masterpiece.",
+            "Time is the only non-renewable resource. Spend it like the precious currency it is.",
+            "The graveyards are full of indispensable people. You are not irreplaceable. That's freedom.",
+            "What would you do today if you knew you had only one year left? Now do that, but spread it out.",
+            "You are going to die. So am I. The question is: what will you do with the dash between the dates?",
+            "Don't count the days. Make the days count. — Muhammad Ali",
+            "Life is not measured by the number of breaths we take, but by the moments that take our breath away.",
+            "The fear of death follows from the fear of life. A man who lives fully is prepared to die at any time. — Mark Twain",
+            "In the face of death, petty obsessions fall away. What remains? Love, purpose, kindness, truth.",
+            "You don't have to be perfect. You just have to be present.",
+            "Every second you spend scrolling, worrying, or obsessing is a second you never get back.",
+            "The clock is ticking. Not to frighten you, but to wake you.",
+            "You are not your urges. You are the chooser. Choose what honors your brief time here.",
+            "Imagine looking back from your deathbed. What regrets would you have? Avoid them now.",
+            "A man who knows he will die is free from the tyranny of trivial desires.",
+            "Memento mori: remember death. Not as a curse, but as a reminder to live authentically.",
+            "You have exactly enough time for what matters most. Stop wasting the rest.",
+            "No one on their deathbed wishes they had spent more time in compulsive loops.",
+            "The window of action is now. Later may never come.",
+            "You are not too old, too late, or too broken. You are here. That's enough.",
+            "This moment is all you have ever had. All you will ever have. Use it.",
+            "Death is the ultimate editor. It cuts out everything that doesn't matter.",
+            "If you want to change your life, start before you feel ready. The clock won't wait.",
+            "You are mortal. That's not sad. That's what gives every choice weight.",
+            "One day you will close your eyes for the last time. What story will you have written?",
+            "The only true failure is failing to live by your own values before time runs out.",
+            "Do not be afraid of death. Be afraid of not having truly lived."
+        ];
 
-        // ========== PARTICLE EFFECT ==========
-        const canvas = document.getElementById('particleCanvas');
-        let ctx = canvas.getContext('2d');
-        let particles = [];
-        let animationId = null;
-        
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        
-        function createParticleEffect() {
-            particles = [];
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            for (let i = 0; i < 120; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 2 + Math.random() * 6;
-                const vx = Math.cos(angle) * speed;
-                const vy = Math.sin(angle) * speed;
-                particles.push({
-                    x: centerX, y: centerY,
-                    vx: vx, vy: vy,
-                    life: 1.0,
-                    size: 4 + Math.random() * 8,
-                    color: `hsl(${40 + Math.random() * 40}, 80%, 60%)`
-                });
-            }
-            if (animationId) cancelAnimationFrame(animationId);
-            animateParticles();
-            setTimeout(() => {
-                if (animationId) cancelAnimationFrame(animationId);
-                animationId = null;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }, 1500);
-        }
-        
-        function animateParticles() {
-            if (!ctx) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let allDead = true;
-            for (let i = 0; i < particles.length; i++) {
-                const p = particles[i];
-                if (p.life <= 0) continue;
-                allDead = false;
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.02;
-                p.vx *= 0.98;
-                p.vy *= 0.98;
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            if (!allDead) {
-                animationId = requestAnimationFrame(animateParticles);
-            } else {
-                animationId = null;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        }
-        
-        function showCelebration() {
-            createParticleEffect();
-            const popup = document.createElement('div');
-            popup.className = 'celebration-popup';
-            popup.innerHTML = '<i class="fas fa-check-circle" style="font-size: 1.8rem;"></i> Well done! +1 day of clarity';
-            document.body.appendChild(popup);
-            setTimeout(() => {
-                popup.style.opacity = '0';
-                popup.style.transform = 'translateX(-50%) translateY(30px)';
-                popup.style.transition = 'all 0.3s ease';
-                setTimeout(() => popup.remove(), 500);
-            }, 5000);
-        }
-        
-        // ========== COLOR LOGIC ==========
-        // Corrected days color
-function getDaysColor(daysLeft, totalDays) {
-    if (totalDays <= 0) return '#fbbf24';
-    const fraction = daysLeft / totalDays;
-    if (fraction > 2/3) return '#ef4444'; // red: first 1/3 of journey
-    if (fraction > 1/3) return '#eab308'; // yellow: middle 1/3
-    return '#22c55e'; // green: final 1/3
-}
+        let currentAgeYears = 30;
+        let lifespan = 80;
+        let totalLifeSeconds = lifespan * 365.25 * 24 * 3600;
+        let birthDate = null;
+        let updateInterval = null;
 
-// Corrected clock color (based on remaining seconds)
-function getClockColor(secondsLeftToday) {
-    if (secondsLeftToday > 16 * 3600) return '#ef4444'; // red: first 8h of day
-    if (secondsLeftToday > 8 * 3600) return '#eab308';  // yellow: next 8h
-    if (secondsLeftToday > 3600) return '#22c55e';      // green: next 7h
-    return '#ffffff'; // white: last hour
-}
-        
-        function updateDaysColor() {
-            const endStr = endDateInput.value;
-            const startStr = startDateInput.value;
-            if (!endStr || !startStr) return;
-            const end = new Date(endStr); end.setHours(0,0,0,0);
-            const today = new Date(); today.setHours(0,0,0,0);
-            const start = new Date(startStr); start.setHours(0,0,0,0);
-            const totalDuration = Math.ceil((end - start) / (1000*60*60*24));
-            const daysLeft = Math.ceil((end - today) / (1000*60*60*24));
-            if (totalDuration > 0 && daysLeft >= 0) {
-                const color = getDaysColor(daysLeft, totalDuration);
-                daysCountSpan.style.backgroundImage = 'none';
-                daysCountSpan.style.color = color;
-                daysCountSpan.style.textShadow = `0 0 12px ${color}80`;
+        // Helper: get current age in years from birth date
+        function getAgeFromBirthDate(birthDateObj) {
+            const today = new Date();
+            let age = today.getFullYear() - birthDateObj.getFullYear();
+            const m = today.getMonth() - birthDateObj.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDateObj.getDate())) {
+                age--;
             }
+            return age;
         }
-        
-        // ========== DAILY CLOCK with trigger at 00:00:00 ==========
-        function updateDailyClock() {
-            const now = new Date();
-            const midnight = new Date(now);
-            midnight.setHours(24, 0, 0, 0);
-            const diffMs = midnight - now;
-            if (diffMs <= 0) {
-                dailyClockSpan.innerText = "00:00:00";
-                dailyClockSpan.style.color = '#ffffff';
-                return;
-            }
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (3600000)) / 60000);
-            const seconds = Math.floor((diffMs % 60000) / 1000);
-            const totalSecs = hours * 3600 + minutes * 60 + seconds;
-            const color = getClockColor(totalSecs);
-            dailyClockSpan.style.color = color;
-            dailyClockSpan.style.textShadow = `0 0 8px ${color}80`;
-            dailyClockSpan.innerText = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+
+        // Calculate remaining time and update display
+        function updateLifeClock() {
+            let now = new Date();
+            let ageSec = 0;
+            let totalSec = lifespan * 365.25 * 24 * 3600;
             
-            // Trigger celebration when hitting exactly 00:00:00 (just once per day)
-            if (totalSecs === 0 && lastSecondTrigger !== 0) {
-                lastSecondTrigger = 0;
-                showCelebration();
-            } else if (totalSecs > 0) {
-                lastSecondTrigger = -1;
+            if (birthDate && !isNaN(birthDate.getTime())) {
+                let ageYears = getAgeFromBirthDate(birthDate);
+                currentAgeYears = ageYears;
+                ageInput.value = ageYears;
+                let birthTimestamp = birthDate.getTime();
+                let nowTimestamp = now.getTime();
+                ageSec = (nowTimestamp - birthTimestamp) / 1000;
+            } else {
+                // use age input
+                currentAgeYears = parseFloat(ageInput.value) || 0;
+                ageSec = currentAgeYears * 365.25 * 24 * 3600;
+            }
+            
+            totalLifeSeconds = lifespan * 365.25 * 24 * 3600;
+            let remainingSec = totalLifeSeconds - ageSec;
+            if (remainingSec < 0) remainingSec = 0;
+            
+            // Compute remaining components
+            let remainingYears = remainingSec / (365.25 * 24 * 3600);
+            let years = Math.floor(remainingYears);
+            let remainingAfterYears = remainingSec - (years * 365.25 * 24 * 3600);
+            let months = Math.floor(remainingAfterYears / (30.44 * 24 * 3600));
+            let remainingAfterMonths = remainingAfterYears - (months * 30.44 * 24 * 3600);
+            let days = Math.floor(remainingAfterMonths / (24 * 3600));
+            let remainingAfterDays = remainingAfterMonths - (days * 24 * 3600);
+            let hours = Math.floor(remainingAfterDays / 3600);
+            let remainingAfterHours = remainingAfterDays - (hours * 3600);
+            let minutes = Math.floor(remainingAfterHours / 60);
+            let seconds = Math.floor(remainingAfterHours % 60);
+            
+            remainingDisplay.innerHTML = `${years}y ${months}m ${days}d ${hours}h ${minutes}m ${seconds}s`;
+            
+            // Progress bar percentage of life used
+            let percentUsed = (ageSec / totalLifeSeconds) * 100;
+            if (percentUsed > 100) percentUsed = 100;
+            if (percentUsed < 0) percentUsed = 0;
+            percentUsedSpan.innerText = `${percentUsed.toFixed(1)}% used`;
+            lifeProgressBar.style.width = `${percentUsed}%`;
+            
+            // Change progress bar color based on remaining percentage
+            let remainingPercent = 100 - percentUsed;
+            if (remainingPercent > 50) lifeProgressBar.style.background = "linear-gradient(90deg, #22c55e, #eab308)";
+            else if (remainingPercent > 25) lifeProgressBar.style.background = "linear-gradient(90deg, #eab308, #ef4444)";
+            else lifeProgressBar.style.background = "linear-gradient(90deg, #ef4444, #991b1b)";
+            
+            // Also pulse red if less than 5% remaining?
+            if (remainingPercent < 5) {
+                document.getElementById('remainingDisplay').classList.add('animate-pulse');
+            } else {
+                document.getElementById('remainingDisplay').classList.remove('animate-pulse');
             }
         }
         
-        function startDailyClock() {
-            if (clockInterval) clearInterval(clockInterval);
-            updateDailyClock();
-            clockInterval = setInterval(updateDailyClock, 1000);
+        // Sync birth date from age or vice versa
+        function syncFromAge() {
+            let age = parseFloat(ageInput.value);
+            if (isNaN(age)) age = 30;
+            let today = new Date();
+            let birthYear = today.getFullYear() - age;
+            let birthMonth = today.getMonth();
+            let birthDay = today.getDate();
+            let estimatedBirth = new Date(birthYear, birthMonth, birthDay);
+            birthDateInput.value = estimatedBirth.toISOString().slice(0,10);
+            birthDate = estimatedBirth;
+            updateLifeClock();
         }
         
-        // ========== OTHER APP LOGIC ==========
-        function showConfirmDialog(message, onConfirm, onCancel) {
-            const overlay = document.createElement('div');
-            overlay.className = 'confirm-overlay';
-            overlay.innerHTML = `<div class="confirm-card bg-gray-900 rounded-2xl shadow-2xl border border-amber-500/30 p-6">
-                <div class="flex items-center gap-3 mb-4"><i class="fas fa-exclamation-triangle text-amber-400 text-xl"></i><h3 class="text-white font-bold text-lg">Confirm Action</h3></div>
-                <p class="text-gray-300 text-sm mb-6">${message}</p><div class="flex gap-3 justify-end">
-                <button id="confirmCancelBtn" class="px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm transition">Cancel</button>
-                <button id="confirmOkBtn" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm transition">Yes, Proceed</button></div></div>`;
-            document.body.appendChild(overlay);
-            const cancelBtn = overlay.querySelector('#confirmCancelBtn');
-            const okBtn = overlay.querySelector('#confirmOkBtn');
-            const cleanup = () => overlay.remove();
-            cancelBtn.addEventListener('click', () => { if (onCancel) onCancel(); cleanup(); });
-            okBtn.addEventListener('click', () => { if (onConfirm) onConfirm(); cleanup(); });
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) { if (onCancel) onCancel(); cleanup(); } });
+        function syncFromBirthDate() {
+            let dateStr = birthDateInput.value;
+            if (dateStr) {
+                let parsed = new Date(dateStr);
+                if (!isNaN(parsed.getTime())) {
+                    birthDate = parsed;
+                    let ageNow = getAgeFromBirthDate(birthDate);
+                    ageInput.value = ageNow;
+                    currentAgeYears = ageNow;
+                    updateLifeClock();
+                }
+            }
         }
         
-        function togglePanel() {
-            customizationPanel.classList.toggle('collapsed');
-            const isCollapsed = customizationPanel.classList.contains('collapsed');
-            toggleIcon.className = isCollapsed ? 'fas fa-sliders-h' : 'fas fa-times';
-            toggleTextSpan.innerText = isCollapsed ? 'show settings' : 'hide settings';
+        function updateAll() {
+            lifespan = parseFloat(lifespanInput.value);
+            if (isNaN(lifespan)) lifespan = 80;
+            if (birthDateInput.value) {
+                syncFromBirthDate();
+            } else {
+                syncFromAge();
+            }
+            updateLifeClock();
         }
         
-        function saveQuotesToLocal() { localStorage.setItem(STORAGE_KEYS.QUOTES_LIST, JSON.stringify(currentQuotesList)); }
-        function loadQuotesFromLocal() {
-            const stored = localStorage.getItem(STORAGE_KEYS.QUOTES_LIST);
-            if (stored) { try { const p = JSON.parse(stored); if (Array.isArray(p) && p.length) currentQuotesList = p; else currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; } catch(e) { currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; } } 
-            else currentQuotesList = [...DEFAULT_QUOTES_ARRAY];
-            updateQuotesTextareaFromList();
+        // Quote handling
+        function getRandomQuote() {
+            return mortalityQuotes[Math.floor(Math.random() * mortalityQuotes.length)];
         }
-        function updateQuotesTextareaFromList() { quotesTextarea.value = currentQuotesList.join('\n'); }
-        function syncQuotesFromTextarea() {
-            const lines = quotesTextarea.value.split(/\r?\n/).filter(l => l.trim().length);
-            currentQuotesList = lines.length ? lines : ["You are not broken. Keep going. — clarity compass"];
-            saveQuotesToLocal(); updateQuotesTextareaFromList(); setDailyQuoteByDate();
-        }
-        function addNewQuote() { const q = prompt("Add your own quote:", "I am in control."); if (q?.trim()) { currentQuotesList.push(q.trim()); saveQuotesToLocal(); updateQuotesTextareaFromList(); setDailyQuoteByDate(); } }
-        function getStoredDates() { let s = localStorage.getItem(STORAGE_KEYS.START_DATE), e = localStorage.getItem(STORAGE_KEYS.END_DATE); if (!s) s = '2026-04-12'; if (!e) e = '2026-10-12'; return { start: s, end: e }; }
-        function saveDates(s, e) { localStorage.setItem(STORAGE_KEYS.START_DATE, s); localStorage.setItem(STORAGE_KEYS.END_DATE, e); }
-        function updateDisplayAndCountdown() {
-            const startStr = startDateInput.value, endStr = endDateInput.value;
-            if (!startStr || !endStr) return;
-            saveDates(startStr, endStr);
-            const start = new Date(startStr), end = new Date(endStr), today = new Date(); today.setHours(0,0,0,0);
-            const endMid = new Date(endStr); endMid.setHours(0,0,0,0);
-            const total = Math.ceil((endMid - start) / 86400000);
-            const left = Math.ceil((endMid - today) / 86400000);
-            const passed = Math.ceil((today - start) / 86400000);
-            let percent = 0;
-            if (total > 0 && passed >= 0) percent = Math.min(100, Math.max(0, Math.floor((passed / total) * 100)));
-            if (left < 0) { daysCountSpan.innerText = "0"; endDateLabel.innerText = "✨ goal achieved ✨"; progressPercentSpan.innerText = "100"; totalDaysSpan.innerText = total; }
-            else { daysCountSpan.innerText = left; endDateLabel.innerText = `until ${endStr}`; totalDaysSpan.innerText = total; progressPercentSpan.innerText = percent; }
-            updateDaysColor();
-        }
-        function getDailyQuoteByDate() { if (!currentQuotesList.length) return "You are not defective."; const seed = Math.floor(Date.now() / 86400000); return currentQuotesList[seed % currentQuotesList.length]; }
-        function getRandomQuote() { return currentQuotesList.length ? currentQuotesList[Math.floor(Math.random() * currentQuotesList.length)] : "Stay steady."; }
-        function setDailyQuoteByDate() { quoteTextP.innerText = getDailyQuoteByDate(); }
-        function setRandomQuote() { quoteTextP.innerText = getRandomQuote(); }
-        function resetToFactory() { showConfirmDialog("Reset to factory defaults? Your data will be lost.", () => { startDateInput.value = '2026-04-12'; endDateInput.value = '2026-10-12'; saveDates('2026-04-12','2026-10-12'); currentQuotesList = [...DEFAULT_QUOTES_ARRAY]; saveQuotesToLocal(); updateQuotesTextareaFromList(); updateDisplayAndCountdown(); setDailyQuoteByDate(); }); }
-        function exportData() { const obj = { version:"1.0", exportDate:new Date().toISOString(), startDate:startDateInput.value, endDate:endDateInput.value, quotes:currentQuotesList }; const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `clarity-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href); }
-        let pendingFile = null;
-        function performImport(f) { const reader = new FileReader(); reader.onload = e => { try { const d = JSON.parse(e.target.result); if (d.startDate && d.endDate && Array.isArray(d.quotes)) { startDateInput.value = d.startDate; endDateInput.value = d.endDate; currentQuotesList = d.quotes.filter(q => typeof q === 'string' && q.trim()); if (!currentQuotesList.length) currentQuotesList = ["You are not broken."]; saveQuotesToLocal(); updateQuotesTextareaFromList(); saveDates(d.startDate, d.endDate); updateDisplayAndCountdown(); setDailyQuoteByDate(); alert("✓ Import successful!"); } else alert("Invalid file."); } catch(err) { alert("Error parsing JSON."); } }; reader.readAsText(f); }
-        function handleFileSelect(f) { if (!f) return; pendingFile = f; showConfirmDialog("Overwrite current data? This cannot be undone.", () => { performImport(pendingFile); pendingFile = null; }, () => { pendingFile = null; }); }
         
+        function setRandomQuote() {
+            quoteText.innerText = getRandomQuote();
+        }
+        
+        // Auto-refresh every second
+        function startTicker() {
+            if (updateInterval) clearInterval(updateInterval);
+            updateInterval = setInterval(() => {
+                updateLifeClock();
+            }, 1000);
+        }
+        
+        // Event listeners
+        updateBtn.addEventListener('click', () => {
+            lifespan = parseFloat(lifespanInput.value);
+            if (birthDateInput.value) syncFromBirthDate();
+            else syncFromAge();
+            updateLifeClock();
+            setRandomQuote();
+        });
+        
+        birthDateInput.addEventListener('change', () => {
+            syncFromBirthDate();
+            updateLifeClock();
+        });
+        
+        ageInput.addEventListener('change', () => {
+            syncFromAge();
+            updateLifeClock();
+        });
+        
+        refreshQuoteBtn.addEventListener('click', setRandomQuote);
+        
+        // Initialize
         function init() {
-            loadQuotesFromLocal();
-            const { start, end } = getStoredDates();
-            startDateInput.value = start; endDateInput.value = end;
-            updateDisplayAndCountdown(); setDailyQuoteByDate(); startDailyClock();
-            startDateInput.addEventListener('change', () => { updateDisplayAndCountdown(); });
-            endDateInput.addEventListener('change', () => { updateDisplayAndCountdown(); });
-            quotesTextarea.addEventListener('blur', syncQuotesFromTextarea);
-            refreshQuoteBtn.addEventListener('click', setRandomQuote);
-            resetDefaultsBtn.addEventListener('click', resetToFactory);
-            addQuoteBtn.addEventListener('click', addNewQuote);
-            togglePanelBtn.addEventListener('click', togglePanel);
-            exportDataBtn.addEventListener('click', exportData);
-            importFileInput.addEventListener('change', (e) => { if (e.target.files && e.target.files[0]) handleFileSelect(e.target.files[0]); importFileInput.value = ''; });
-            customizationPanel.classList.add('collapsed');
-            toggleIcon.className = 'fas fa-sliders-h'; toggleTextSpan.innerText = 'show settings';
-            resizeCanvas();
+            // Default: age 30, lifespan 80
+            let defaultBirth = new Date();
+            defaultBirth.setFullYear(defaultBirth.getFullYear() - 30);
+            birthDateInput.value = defaultBirth.toISOString().slice(0,10);
+            birthDate = defaultBirth;
+            ageInput.value = 30;
+            lifespanInput.value = 80;
+            lifespan = 80;
+            updateLifeClock();
+            setRandomQuote();
+            startTicker();
         }
+        
         init();
     </script>
 </body>
