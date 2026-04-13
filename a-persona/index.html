@@ -28,11 +28,39 @@
         .color-radio-group label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; cursor: pointer; }
         .color-swatch { width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
         .zone-row { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 0.5rem; margin-bottom: 0.5rem; }
-        .dropdown { position: relative; display: inline-block; z-index: 9989;}
-        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background-color: #1f2937; min-width: 160px; border-radius: 0.75rem; box-shadow: 0 8px 16px rgba(0,0,0,0.3); z-index: 9990; border: 1px solid rgba(255,255,255,0.2); margin-top: 4px; }
-        .dropdown-content button { color: white; padding: 8px 12px; text-decoration: none; display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-size: 0.75rem; border-radius: 0.5rem; transition: background 0.2s; }
-        .dropdown-content button:hover { background-color: #374151; }
-        .dropdown:hover .dropdown-content { display: block; }
+        /* Dropdown styles - click/tap version */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: #1f2937;
+            min-width: 160px;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            z-index: 10;
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-top: 4px;
+        }
+        .dropdown-content.show { display: block; }
+        .dropdown-content button, .dropdown-content label {
+            color: white;
+            padding: 8px 12px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+        .dropdown-content button:hover, .dropdown-content label:hover { background-color: #374151; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
@@ -77,14 +105,14 @@
                 <p class="text-gray-400 text-[10px] mt-2">Each zone: start hour (0‑23), end hour (1‑24). Notice appears under daily clock.</p>
             </div>
 
-            <!-- Row with Update button and Tools dropdown -->
+            <!-- Row with Update button and Tools dropdown (click/tap version) -->
             <div class="flex flex-wrap gap-3 justify-center mt-4 pt-2 border-t border-white/20">
                 <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update clock</button>
-                <div class="dropdown">
-                    <button class="bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-tools mr-1"></i> tools</button>
-                    <div class="dropdown-content">
+                <div class="dropdown" id="toolsDropdown">
+                    <button id="toolsBtn" class="bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-tools mr-1"></i> tools</button>
+                    <div id="dropdownContent" class="dropdown-content">
                         <button id="exportDataBtn"><i class="fas fa-download"></i> export settings (.json)</button>
-                        <label style="cursor: pointer; padding: 8px 12px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-upload"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
+                        <label style="cursor: pointer;"><i class="fas fa-upload"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
                         <button id="resetZonesBtn"><i class="fas fa-undo-alt"></i> reset zones to default</button>
                     </div>
                 </div>
@@ -106,7 +134,7 @@
                 <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden"><div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div></div>
             </div>
 
-            <!-- DAILY CLOCK (replaces lifetime HMS) with heartbeat and color -->
+            <!-- DAILY CLOCK with heartbeat and color -->
             <div class="mt-4 pt-2 border-t border-white/20">
                 <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">time left in this day</div>
                 <div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="dailyClockDisplay">00:00:00</div>
@@ -185,9 +213,24 @@
     const exportDataBtn = document.getElementById('exportDataBtn');
     const importFileInput = document.getElementById('importFileInput');
     const resetZonesBtn = document.getElementById('resetZonesBtn');
+    const toolsBtn = document.getElementById('toolsBtn');
+    const dropdownContent = document.getElementById('dropdownContent');
 
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
+
+    // ---------- Dropdown click/toggle logic (mobile friendly) ----------
+    function toggleDropdown(e) {
+        e.stopPropagation();
+        dropdownContent.classList.toggle('show');
+    }
+    function closeDropdownOnClickOutside(e) {
+        if (!toolsBtn.contains(e.target) && !dropdownContent.contains(e.target)) {
+            dropdownContent.classList.remove('show');
+        }
+    }
+    toolsBtn.addEventListener('click', toggleDropdown);
+    document.addEventListener('click', closeDropdownOnClickOutside);
 
     // ---------- PERSISTENCE (extended) ----------
     function saveAllSettings() {
@@ -261,7 +304,6 @@
         return { years, months, days, hours, minutes, seconds };
     }
 
-    // Lifetime update (years, months, days, progress bar)
     function updateLifeClock() {
         if (!currentBirthDate || !deathDate) return;
         const now = new Date();
@@ -289,7 +331,6 @@
         updateDailyClock();
     }
 
-    // Daily clock with heartbeat and color based on zones
     function updateDailyClock() {
         const now = new Date();
         const midnight = new Date(now); midnight.setHours(24,0,0,0);
