@@ -28,7 +28,11 @@
             opacity: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            position: relative;
+        }
+        /* When panel is open on mobile, allow full expansion */
+        .toggle-panel:not(.collapsed) {
+            max-height: none;
+            overflow-y: visible;
         }
         .toggle-panel.collapsed {
             max-height: 0;
@@ -76,10 +80,12 @@
         .dropdown-content button:hover, .dropdown-content label:hover { background-color: #374151; }
         .hidden-tool { display: none !important; }
         #zonesContainer { overflow: visible; max-height: none; }
-        /* Ensure inputs are clickable and not hidden */
+        /* Ensure inputs are easy to tap */
         .zone-start, .zone-end, .zone-notice-input {
             pointer-events: auto;
             touch-action: manipulation;
+            scroll-margin-top: 100px;
+            scroll-margin-bottom: 100px;
         }
     </style>
 </head>
@@ -234,47 +240,39 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- SCROLL FIX FOR MOBILE ----------
-    function scrollInputIntoView(inputElement) {
-        // Wait for keyboard to open (300ms)
+    // ---------- FIXED SCROLL FOR MOBILE (works on all inputs) ----------
+    function scrollToInputSmoothly(inputElement) {
+        if (!inputElement) return;
+        // Small delay to let keyboard start opening
         setTimeout(() => {
-            // Get the settings panel (scrollable container)
-            const panel = document.getElementById('settingsPanel');
-            if (!panel) return;
-            
-            // Calculate position relative to panel
-            const inputRect = inputElement.getBoundingClientRect();
-            const panelRect = panel.getBoundingClientRect();
-            
-            // If input is above or below the visible panel area, scroll it into view
-            if (inputRect.top < panelRect.top || inputRect.bottom > panelRect.bottom) {
-                // Calculate scroll offset - center the input in the panel
-                const scrollOffset = inputElement.offsetTop - (panel.clientHeight / 2) + (inputElement.clientHeight / 2);
-                panel.scrollTo({
-                    top: Math.max(0, scrollOffset),
-                    behavior: 'smooth'
-                });
-            }
-            
-            // Also ensure the main window doesn't obscure anything
-            window.scrollTo({
-                top: Math.max(0, panel.offsetTop - 20),
-                behavior: 'smooth'
+            // Use native scrollIntoView with smooth behavior and margin
+            inputElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'nearest'
             });
-        }, 300);
+        }, 100);
     }
+
+    // Also listen for window resize (keyboard open/close) and re-scroll to focused element
+    let lastFocusedInput = null;
+    function onFocusHandler(event) {
+        lastFocusedInput = event.target;
+        scrollToInputSmoothly(event.target);
+    }
+    function onResizeHandler() {
+        if (lastFocusedInput && document.activeElement === lastFocusedInput) {
+            scrollToInputSmoothly(lastFocusedInput);
+        }
+    }
+    window.addEventListener('resize', onResizeHandler);
 
     function attachScrollHandlers() {
         const inputs = document.querySelectorAll('.zone-start, .zone-end, .zone-notice-input');
         inputs.forEach(input => {
-            // Remove existing listener to avoid duplicates
-            input.removeEventListener('focus', handleFocus);
-            input.addEventListener('focus', handleFocus);
+            input.removeEventListener('focus', onFocusHandler);
+            input.addEventListener('focus', onFocusHandler);
         });
-    }
-    
-    function handleFocus(event) {
-        scrollInputIntoView(event.target);
     }
 
     // Dropdown logic
@@ -574,6 +572,10 @@
             dropdownContent.classList.remove('show');
         } else {
             toolsRow.classList.remove('hidden-tool');
+            // Small delay to ensure panel is open before focusing
+            setTimeout(() => {
+                if (lastFocusedInput) scrollToInputSmoothly(lastFocusedInput);
+            }, 50);
         }
     }
     toggleSettingsBtn.addEventListener('click', toggleSettings);
