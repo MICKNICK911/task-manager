@@ -75,15 +75,26 @@
             </div>
         </div>
 
-        <!-- Toggle button for settings -->
-        <div class="flex justify-center mb-3">
+        <!-- Row 1: Toggle Settings button + Tools dropdown (always visible) -->
+        <div class="flex flex-wrap justify-center gap-3 mb-4">
             <button id="toggleSettingsBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
                 <i class="fas fa-cog" id="toggleIcon"></i>
                 <span id="toggleText">Know Your Time Left</span>
             </button>
+            
+            <div class="dropdown" id="toolsDropdown">
+                <button id="toolsBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
+                    <i class="fas fa-tools mr-1"></i> tools
+                </button>
+                <div id="dropdownContent" class="dropdown-content">
+                    <button id="exportDataBtn"><i class="fas fa-download"></i> export settings (.json)</button>
+                    <label style="cursor: pointer;"><i class="fas fa-upload"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
+                    <button id="resetZonesBtn"><i class="fas fa-undo-alt"></i> reset zones to default</button>
+                </div>
+            </div>
         </div>
 
-        <!-- COLLAPSIBLE SETTINGS PANEL -->
+        <!-- COLLAPSIBLE SETTINGS PANEL (now only contains birth, lifespan, and color zones) -->
         <div id="settingsPanel" class="toggle-panel collapsed bg-black/30 rounded-2xl p-5 mb-6 border border-white/10">
             <!-- Birth & lifespan -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
@@ -105,17 +116,9 @@
                 <p class="text-gray-400 text-[10px] mt-2">Each zone: start hour (0‑23), end hour (1‑24). Notice appears under daily clock.</p>
             </div>
 
-            <!-- Row with Update button and Tools dropdown (click/tap version) -->
-            <div class="flex flex-wrap gap-3 justify-center mt-4 pt-2 border-t border-white/20">
+            <!-- Update button (still inside panel, at bottom) -->
+            <div class="flex justify-center mt-4 pt-2 border-t border-white/20">
                 <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update clock</button>
-                <div class="dropdown" id="toolsDropdown">
-                    <button id="toolsBtn" class="bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-tools mr-1"></i> tools</button>
-                    <div id="dropdownContent" class="dropdown-content">
-                        <button id="exportDataBtn"><i class="fas fa-download"></i> export settings (.json)</button>
-                        <label style="cursor: pointer;"><i class="fas fa-upload"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
-                        <button id="resetZonesBtn"><i class="fas fa-undo-alt"></i> reset zones to default</button>
-                    </div>
-                </div>
             </div>
             <p class="text-gray-400 text-[10px] text-center mt-3"><i class="fas fa-info-circle mr-1"></i> uses exact calendar (leap years, real month lengths). day assumed = 1st. All settings auto‑saved.</p>
         </div>
@@ -219,7 +222,7 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- Dropdown click/toggle logic (mobile friendly) ----------
+    // ---------- Dropdown click/toggle logic ----------
     function toggleDropdown(e) {
         e.stopPropagation();
         dropdownContent.classList.toggle('show');
@@ -232,7 +235,7 @@
     toolsBtn.addEventListener('click', toggleDropdown);
     document.addEventListener('click', closeDropdownOnClickOutside);
 
-    // ---------- PERSISTENCE (extended) ----------
+    // ---------- PERSISTENCE ----------
     function saveAllSettings() {
         const settings = { birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
         localStorage.setItem('hardTruthSettings', JSON.stringify(settings));
