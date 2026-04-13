@@ -22,12 +22,12 @@
         .progress-bar { transition: width 0.5s ease; }
         input, select { background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
         input:focus, select:focus { outline: none; border-color: #f59e0b; }
-        /* Remove scrollable container – let the page scroll naturally */
         .toggle-panel {
             transition: max-height 0.4s ease-out, opacity 0.3s ease, padding 0.2s, margin 0.2s;
             max-height: 800px;
             opacity: 1;
-            overflow: visible; /* no internal scroll */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .toggle-panel.collapsed {
             max-height: 0;
@@ -36,11 +36,6 @@
             margin: 0 !important;
             border: none !important;
             overflow: hidden;
-        }
-        /* When open, no height restriction */
-        .toggle-panel:not(.collapsed) {
-            max-height: none;
-            overflow: visible;
         }
         .color-radio-group { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
         .color-radio-group label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; cursor: pointer; }
@@ -82,7 +77,7 @@
         #zonesContainer { overflow: visible; max-height: none; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4">
+<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
 
 <div class="max-w-4xl w-full mx-auto">
     <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
@@ -233,29 +228,32 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- COMPLETELY NEW SCROLL HANDLER ----------
-    // This function will be called when any zone input receives focus.
-    // It waits for the keyboard to open (using multiple attempts) and then scrolls the input into the center of the viewport.
-    let scrollTimeout = null;
-    function scrollInputToCenter(inputElement) {
-        if (!inputElement) return;
-        // Clear any previous pending scroll
-        if (scrollTimeout) clearTimeout(scrollTimeout);
-        // Use a short delay first, then a longer one to ensure keyboard is fully open
-        const attemptScroll = () => {
-            inputElement.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-                inline: 'nearest'
+    // ---------- SCROLL FIX: ensure focused input is visible inside settings panel ----------
+    function scrollToMakeVisible(inputElement) {
+        if (!inputElement || !settingsPanel) return;
+        // Get the panel's scrollable area
+        const panelRect = settingsPanel.getBoundingClientRect();
+        const inputRect = inputElement.getBoundingClientRect();
+        // Check if input is outside the visible area of the panel
+        const isAbove = inputRect.top < panelRect.top;
+        const isBelow = inputRect.bottom > panelRect.bottom;
+        if (isAbove || isBelow) {
+            // Calculate how much to scroll
+            const scrollOffset = inputElement.offsetTop - (settingsPanel.clientHeight / 2) + (inputElement.clientHeight / 2);
+            settingsPanel.scrollTo({
+                top: Math.max(0, scrollOffset),
+                behavior: 'smooth'
             });
-        };
-        // First attempt after 100ms (keyboard starts opening)
-        setTimeout(attemptScroll, 100);
-        // Second attempt after 350ms (keyboard fully open)
-        scrollTimeout = setTimeout(attemptScroll, 350);
-        // Also listen for window resize (keyboard changes viewport height)
+        }
+    }
+
+    function handleFocus(event) {
+        const input = event.target;
+        // Small delay to allow any layout changes (especially mobile keyboard)
+        setTimeout(() => scrollToMakeVisible(input), 100);
+        // Also on window resize (keyboard open) re-scroll
         const onResize = () => {
-            attemptScroll();
+            scrollToMakeVisible(input);
             window.removeEventListener('resize', onResize);
         };
         window.addEventListener('resize', onResize, { once: true });
@@ -264,12 +262,9 @@
     function attachFocusHandlers() {
         const inputs = document.querySelectorAll('.zone-start, .zone-end, .zone-notice-input');
         inputs.forEach(input => {
-            input.removeEventListener('focus', focusHandler);
-            input.addEventListener('focus', focusHandler);
+            input.removeEventListener('focus', handleFocus);
+            input.addEventListener('focus', handleFocus);
         });
-    }
-    function focusHandler(event) {
-        scrollInputToCenter(event.target);
     }
 
     // Dropdown logic
@@ -462,7 +457,7 @@
             zonesContainer.appendChild(div);
         });
         attachZoneEvents();
-        attachFocusHandlers(); // attach focus handlers to the new inputs
+        attachFocusHandlers();
     }
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m)); }
