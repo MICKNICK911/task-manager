@@ -18,7 +18,7 @@
         .life-number { font-family: 'JetBrains Mono', monospace; font-size: clamp(2rem, 10vw, 4rem); font-weight: 800; letter-spacing: 2px; line-height: 1; }
         .life-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 500; color: #9ca3af; margin-top: 4px; }
         .heartbeat { animation: pulseRed 1.2s ease-in-out infinite; }
-        @keyframes pulseRed { 0% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; } 50% { color: #ff6666; text-shadow: 0 0 12px #ef4444; opacity: 1; } 100% { color: #ef4444; text-shadow: 0 0 2px #ef4444; opacity: 0.9; } }
+        @keyframes pulseRed { 0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; } }
         .progress-bar { transition: width 0.5s ease; }
         input, select { background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
         input:focus, select:focus { outline: none; border-color: #f59e0b; }
@@ -28,6 +28,11 @@
         .color-radio-group label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; cursor: pointer; }
         .color-swatch { width: 1.2rem; height: 1.2rem; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); }
         .zone-row { background: rgba(0,0,0,0.3); border-radius: 1rem; padding: 0.5rem; margin-bottom: 0.5rem; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; top: 100%; background-color: #1f2937; min-width: 160px; border-radius: 0.75rem; box-shadow: 0 8px 16px rgba(0,0,0,0.3); z-index: 10; border: 1px solid rgba(255,255,255,0.2); margin-top: 4px; }
+        .dropdown-content button { color: white; padding: 8px 12px; text-decoration: none; display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-size: 0.75rem; border-radius: 0.5rem; transition: background 0.2s; }
+        .dropdown-content button:hover { background-color: #374151; }
+        .dropdown:hover .dropdown-content { display: block; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
@@ -50,7 +55,7 @@
             </button>
         </div>
 
-        <!-- COLLAPSIBLE SETTINGS PANEL (extended) -->
+        <!-- COLLAPSIBLE SETTINGS PANEL -->
         <div id="settingsPanel" class="toggle-panel collapsed bg-black/30 rounded-2xl p-5 mb-6 border border-white/10">
             <!-- Birth & lifespan -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
@@ -72,14 +77,18 @@
                 <p class="text-gray-400 text-[10px] mt-2">Each zone: start hour (0‑23), end hour (1‑24). Notice appears under daily clock.</p>
             </div>
 
-            <!-- Import/Export -->
-            <div class="flex flex-wrap gap-2 justify-center mt-4 pt-2 border-t border-white/20">
-                <button id="exportDataBtn" class="text-xs bg-emerald-600/70 hover:bg-emerald-500 px-3 py-1.5 rounded-full text-white"><i class="fas fa-download mr-1"></i> export settings (.json)</button>
-                <label class="cursor-pointer text-xs bg-sky-600/70 hover:bg-sky-500 px-3 py-1.5 rounded-full text-white inline-flex items-center gap-1"><i class="fas fa-upload mr-1"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
-                <button id="resetZonesBtn" class="text-xs bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-gray-300"><i class="fas fa-undo-alt mr-1"></i> reset zones to default</button>
+            <!-- Row with Update button and Tools dropdown -->
+            <div class="flex flex-wrap gap-3 justify-center mt-4 pt-2 border-t border-white/20">
+                <button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update clock</button>
+                <div class="dropdown">
+                    <button class="bg-slate-600 hover:bg-slate-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-tools mr-1"></i> tools</button>
+                    <div class="dropdown-content">
+                        <button id="exportDataBtn"><i class="fas fa-download"></i> export settings (.json)</button>
+                        <label style="cursor: pointer; padding: 8px 12px; display: flex; align-items: center; gap: 8px;"><i class="fas fa-upload"></i> import settings<input type="file" id="importFileInput" accept=".json" class="hidden" /></label>
+                        <button id="resetZonesBtn"><i class="fas fa-undo-alt"></i> reset zones to default</button>
+                    </div>
+                </div>
             </div>
-
-            <div class="flex justify-center mt-3"><button id="updateBtn" class="bg-amber-600 hover:bg-amber-500 text-white px-5 py-2 rounded-xl text-sm transition"><i class="fas fa-sync-alt mr-1"></i> update clock</button></div>
             <p class="text-gray-400 text-[10px] text-center mt-3"><i class="fas fa-info-circle mr-1"></i> uses exact calendar (leap years, real month lengths). day assumed = 1st. All settings auto‑saved.</p>
         </div>
 
@@ -97,18 +106,12 @@
                 <div class="w-full bg-gray-700 rounded-full h-4 overflow-hidden"><div id="lifeProgressBar" class="progress-bar h-full rounded-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500" style="width: 0%;"></div></div>
             </div>
 
-            <!-- Lifetime HMS with heartbeat and color based on remaining life -->
-            <div class="mt-4 pt-2 border-t border-white/20">
-                <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">hours · minutes · seconds</div>
-                <div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="hmsDisplay">00:00:00</div>
-                <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-heartbeat text-red-400 mr-1"></i> every heartbeat reminds you: time is finite</div>
-            </div>
-
-            <!-- Daily clock with configurable colors -->
+            <!-- DAILY CLOCK (replaces lifetime HMS) with heartbeat and color -->
             <div class="mt-4 pt-2 border-t border-white/20">
                 <div class="text-gray-400 uppercase tracking-wider text-[10px] font-semibold mb-1">time left in this day</div>
-                <div class="text-2xl md:text-3xl font-mono font-bold" id="dailyClockDisplay">00:00:00</div>
+                <div class="text-2xl md:text-3xl font-mono font-bold heartbeat" id="dailyClockDisplay">00:00:00</div>
                 <div id="dailyNotice" class="text-xs mt-1 italic"></div>
+                <div class="text-gray-500 text-[10px] mt-1"><i class="fas fa-heartbeat text-red-400 mr-1"></i> every heartbeat reminds you: time is finite</div>
             </div>
         </div>
 
@@ -139,114 +142,8 @@
 </div>
 
 <script>
-    // ---------- 120+ POWERFUL MOTIVATIONAL QUOTES & PROVEN FACTS ----------
-    const QUOTES = [
-        "You could leave life right now. Let that determine what you do, say, and think. — Marcus Aurelius",
-        "It is not that we have a short time to live, but that we waste a lot of it. — Seneca",
-        "Let us prepare our minds as if we’d come to the very end of life. Let us postpone nothing. — Seneca",
-        "Remembering you are going to die is the best way to avoid the trap of thinking you have something to lose. — Steve Jobs",
-        "The trouble is, you think you have time. — Buddha",
-        "Live as if you were living already for the second time and had acted as wrongly the first time. — Viktor Frankl",
-        "Death smiles at us all; all a man can do is smile back. — Marcus Aurelius",
-        "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. — Marcus Aurelius",
-        "The graveyards are full of indispensable people. You are not irreplaceable. That's freedom.",
-        "Time is the only non-renewable resource. Spend it like the precious currency it is.",
-        "What would you do today if you knew you had only one year left? Now do that, but spread it out.",
-        "You are going to die. So am I. The question is: what will you do with the dash between the dates?",
-        "Don't count the days. Make the days count. — Muhammad Ali",
-        "In the face of death, petty obsessions fall away. What remains? Love, purpose, kindness, truth.",
-        "You are not your urges. You are the chooser. Choose what honors your brief time here.",
-        "Memento mori: remember death. Not as a curse, but as a reminder to live authentically.",
-        "No one on their deathbed wishes they had spent more time in compulsive loops.",
-        "The window of action is now. Later may never come.",
-        "You are mortal. That's not sad. That's what gives every choice weight.",
-        "One day you will close your eyes for the last time. What story will you have written?",
-        "The fear of death follows from the fear of life. A man who lives fully is prepared to die at any time. — Mark Twain",
-        "Every hour is a stroke of the chisel carving away at the marble of your life. Make it a masterpiece.",
-        "You have exactly enough time for what matters most. Stop wasting the rest.",
-        "Imagine looking back from your deathbed. What regrets would you have? Avoid them now.",
-        "The clock is ticking. Not to frighten you, but to wake you.",
-        "You are not too old, too late, or too broken. You are here. That's enough.",
-        "This moment is all you have ever had. All you will ever have. Use it.",
-        "If you want to change your life, start before you feel ready. The clock won't wait.",
-        "Do not be afraid of death. Be afraid of not having truly lived.",
-        "Fact: The average person spends over 6 years of their life on social media. What could you build with that time?",
-        "Fact: You will blink about 400 million times in your life. Each blink is a small death of a moment.",
-        "Fact: The human brain can rewire itself (neuroplasticity) at any age. Your past does not equal your future.",
-        "Fact: Procrastination is not a time management problem. It's an emotion regulation problem. Face the feeling, then act.",
-        "Fact: People who regularly reflect on mortality report higher life satisfaction and less regret. Try it daily.",
-        "Fact: The most common regret of the dying is: 'I wish I'd had the courage to live a life true to myself, not the life others expected.'",
-        "Fact: You have approximately 28,000 days if you live to 80. How many have you already used?",
-        "Fact: The 'end of history illusion' makes you think you'll change little in the future, but you've changed a lot in the past. Use that.",
-        "Fact: Decision fatigue is real. Protect your willpower by automating small choices. Then use your energy for what truly matters.",
-        "Fact: The average attention span is now 8 seconds (down from 12). Train yours like a muscle. Start with 5 minutes of undistracted focus.",
-        "Fact: Every time you delay an important task, your brain releases a small amount of dopamine to avoid discomfort. That's not reward – it's avoidance.",
-        "Fact: You cannot save time. You can only spend it. The question is: on what?",
-        "Fact: The compound effect of small daily actions is enormous. A 1% improvement every day makes you 37x better after a year.",
-        "Fact: The best time to plant a tree was 20 years ago. The second best time is now. — Chinese proverb",
-        "A man who conquers himself is greater than one who conquers a city. — Confucius",
-        "No man is free who is not master of himself. — Epictetus",
-        "The first and greatest victory is to conquer yourself. — Plato",
-        "You have power over your mind – not outside events. Realize this, and you will find strength. — Marcus Aurelius",
-        "Discipline is choosing between what you want now and what you want most. — Abraham Lincoln",
-        "The secret of getting ahead is getting started. — Mark Twain",
-        "It's not whether you get knocked down, it's whether you get up. — Vince Lombardi",
-        "Believe you can and you're halfway there. — Theodore Roosevelt",
-        "Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time. — Thomas Edison",
-        "Don't watch the clock; do what it does. Keep going. — Sam Levenson",
-        "The pain of discipline is far less than the pain of regret. — Sarah Bombell",
-        "Fall seven times, stand up eight. — Japanese proverb",
-        "The journey of a thousand miles begins with one step. — Lao Tzu",
-        "He who has a why to live can bear almost any how. — Friedrich Nietzsche",
-        "Not every urge requires a response. Some just need acknowledgment.",
-        "You are the sky. Everything else is just the weather. — Pema Chödrön",
-        "Feel the urge, breathe, and watch it dissolve.",
-        "Respect yourself enough to walk away from anything that no longer serves you.",
-        "Your future self is watching you right now through your memories. Make them proud.",
-        "The only person you are destined to become is the person you decide to be. — Ralph Waldo Emerson",
-        "What you get by achieving your goals is not as important as what you become by achieving them. — Zig Ziglar",
-        "Everything you've ever wanted is on the other side of fear. — George Addair",
-        "You don't have to be extreme, just consistent. — James Clear",
-        "A pause is not failure. It's recalibration.",
-        "You are not your thoughts. You are the observer of your thoughts.",
-        "Neuroscience fact: The brain cannot distinguish between a real memory and a vividly imagined one. Visualize your success every day.",
-        "Fact: Writing down your goals makes you 42% more likely to achieve them. Do it now.",
-        "Fact: The Zeigarnik effect means unfinished tasks occupy your mind. Finish one small thing today to free mental space.",
-        "Fact: Your brain releases dopamine when you make progress toward a goal, not just when you reach it. Break big goals into tiny steps.",
-        "Fact: The mere act of naming an emotion reduces its intensity. Next time you feel overwhelmed, say: 'This is anxiety.' Then act.",
-        "Fact: You have about 60,000 thoughts per day. Most are repetitive. Change the channel consciously.",
-        "Fact: The 5-second rule (count down 5-4-3-2-1 and move) interrupts overthinking and activates your prefrontal cortex. Try it.",
-        "Fact: After age 25, your brain loses about 1 gram of mass per year. But learning new skills builds new connections. Keep learning.",
-        "Fact: The happiest people don't have the best circumstances. They have the best habits of attention.",
-        "You will never be younger than you are right now. Act accordingly.",
-        "Stop waiting for motivation. Create discipline. Motivation follows action, not the other way around.",
-        "The only way to make sense out of change is to plunge into it, move with it, and join the dance. — Alan Watts",
-        "Your time is limited, so don't waste it living someone else's life. — Steve Jobs",
-        "If you don't design your own life plan, chances are you'll fall into someone else's plan. And guess what they have planned for you? Not much. — Jim Rohn",
-        "The tragedy of life is not death, but what we let die inside of us while we live. — Norman Cousins",
-        "It's not the years in your life that count. It's the life in your years. — Abraham Lincoln",
-        "Life is what happens when you're busy making other plans. — John Lennon",
-        "The secret of change is to focus all of your energy not on fighting the old, but on building the new. — Socrates",
-        "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment. — Buddha",
-        "The only thing we have to fear is fear itself. — Franklin D. Roosevelt",
-        "You miss 100% of the shots you don't take. — Wayne Gretzky",
-        "Whether you think you can or you think you can't, you're right. — Henry Ford",
-        "The future depends on what you do today. — Mahatma Gandhi",
-        "Act as if what you do makes a difference. It does. — William James",
-        "In three words I can sum up everything I've learned about life: it goes on. — Robert Frost",
-        "Life is either a daring adventure or nothing at all. — Helen Keller",
-        "The purpose of our lives is to be happy. — Dalai Lama",
-        "Get busy living or get busy dying. — Stephen King",
-        "You only live once, but if you do it right, once is enough. — Mae West",
-        "Life is really simple, but we insist on making it complicated. — Confucius",
-        "It does not matter how slowly you go as long as you do not stop. — Confucius",
-        "Our lives begin to end the day we become silent about things that matter. — Martin Luther King Jr.",
-        "Life isn't about finding yourself. Life is about creating yourself. — George Bernard Shaw",
-        "The greatest glory in living lies not in never falling, but in rising every time we fall. — Nelson Mandela",
-        "In the end, it's not the years in your life that count. It's the life in your years. — Abraham Lincoln",
-        "Life is a succession of moments. To live each one is to succeed. — Corita Kent",
-        "The only limit to our realization of tomorrow is our doubts of today. — Franklin D. Roosevelt"
-    ];
+    // ---------- 120+ QUOTES (same as before) ----------
+    const QUOTES = [ "You could leave life right now. Let that determine what you do, say, and think. — Marcus Aurelius", "It is not that we have a short time to live, but that we waste a lot of it. — Seneca", "Let us prepare our minds as if we’d come to the very end of life. Let us postpone nothing. — Seneca", "Remembering you are going to die is the best way to avoid the trap of thinking you have something to lose. — Steve Jobs", "The trouble is, you think you have time. — Buddha", "Live as if you were living already for the second time and had acted as wrongly the first time. — Viktor Frankl", "Death smiles at us all; all a man can do is smile back. — Marcus Aurelius", "Do not act as if you had ten thousand years to throw away. Death stands at your elbow. — Marcus Aurelius", "The graveyards are full of indispensable people. You are not irreplaceable. That's freedom.", "Time is the only non-renewable resource. Spend it like the precious currency it is.", "What would you do today if you knew you had only one year left? Now do that, but spread it out.", "You are going to die. So am I. The question is: what will you do with the dash between the dates?", "Don't count the days. Make the days count. — Muhammad Ali", "In the face of death, petty obsessions fall away. What remains? Love, purpose, kindness, truth.", "You are not your urges. You are the chooser. Choose what honors your brief time here.", "Memento mori: remember death. Not as a curse, but as a reminder to live authentically.", "No one on their deathbed wishes they had spent more time in compulsive loops.", "The window of action is now. Later may never come.", "You are mortal. That's not sad. That's what gives every choice weight.", "One day you will close your eyes for the last time. What story will you have written?", "The fear of death follows from the fear of life. A man who lives fully is prepared to die at any time. — Mark Twain", "Every hour is a stroke of the chisel carving away at the marble of your life. Make it a masterpiece.", "You have exactly enough time for what matters most. Stop wasting the rest.", "Imagine looking back from your deathbed. What regrets would you have? Avoid them now.", "The clock is ticking. Not to frighten you, but to wake you.", "You are not too old, too late, or too broken. You are here. That's enough.", "This moment is all you have ever had. All you will ever have. Use it.", "If you want to change your life, start before you feel ready. The clock won't wait.", "Do not be afraid of death. Be afraid of not having truly lived.", "Fact: The average person spends over 6 years of their life on social media. What could you build with that time?", "Fact: You will blink about 400 million times in your life. Each blink is a small death of a moment.", "Fact: The human brain can rewire itself (neuroplasticity) at any age. Your past does not equal your future.", "Fact: Procrastination is not a time management problem. It's an emotion regulation problem. Face the feeling, then act.", "Fact: People who regularly reflect on mortality report higher life satisfaction and less regret. Try it daily.", "Fact: The most common regret of the dying is: 'I wish I'd had the courage to live a life true to myself, not the life others expected.'", "Fact: You have approximately 28,000 days if you live to 80. How many have you already used?", "Fact: The 'end of history illusion' makes you think you'll change little in the future, but you've changed a lot in the past. Use that.", "Fact: Decision fatigue is real. Protect your willpower by automating small choices. Then use your energy for what truly matters.", "Fact: The average attention span is now 8 seconds (down from 12). Train yours like a muscle. Start with 5 minutes of undistracted focus.", "Fact: Every time you delay an important task, your brain releases a small amount of dopamine to avoid discomfort. That's not reward – it's avoidance.", "Fact: You cannot save time. You can only spend it. The question is: on what?", "Fact: The compound effect of small daily actions is enormous. A 1% improvement every day makes you 37x better after a year.", "Fact: The best time to plant a tree was 20 years ago. The second best time is now. — Chinese proverb", "A man who conquers himself is greater than one who conquers a city. — Confucius", "No man is free who is not master of himself. — Epictetus", "The first and greatest victory is to conquer yourself. — Plato", "You have power over your mind – not outside events. Realize this, and you will find strength. — Marcus Aurelius", "Discipline is choosing between what you want now and what you want most. — Abraham Lincoln", "The secret of getting ahead is getting started. — Mark Twain", "It's not whether you get knocked down, it's whether you get up. — Vince Lombardi", "Believe you can and you're halfway there. — Theodore Roosevelt", "Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time. — Thomas Edison", "Don't watch the clock; do what it does. Keep going. — Sam Levenson", "The pain of discipline is far less than the pain of regret. — Sarah Bombell", "Fall seven times, stand up eight. — Japanese proverb", "The journey of a thousand miles begins with one step. — Lao Tzu", "He who has a why to live can bear almost any how. — Friedrich Nietzsche", "Not every urge requires a response. Some just need acknowledgment.", "You are the sky. Everything else is just the weather. — Pema Chödrön", "Feel the urge, breathe, and watch it dissolve.", "Respect yourself enough to walk away from anything that no longer serves you.", "Your future self is watching you right now through your memories. Make them proud.", "The only person you are destined to become is the person you decide to be. — Ralph Waldo Emerson", "What you get by achieving your goals is not as important as what you become by achieving them. — Zig Ziglar", "Everything you've ever wanted is on the other side of fear. — George Addair", "You don't have to be extreme, just consistent. — James Clear", "A pause is not failure. It's recalibration.", "You are not your thoughts. You are the observer of your thoughts.", "Neuroscience fact: The brain cannot distinguish between a real memory and a vividly imagined one. Visualize your success every day.", "Fact: Writing down your goals makes you 42% more likely to achieve them. Do it now.", "Fact: The Zeigarnik effect means unfinished tasks occupy your mind. Finish one small thing today to free mental space.", "Fact: Your brain releases dopamine when you make progress toward a goal, not just when you reach it. Break big goals into tiny steps.", "Fact: The mere act of naming an emotion reduces its intensity. Next time you feel overwhelmed, say: 'This is anxiety.' Then act.", "Fact: You have about 60,000 thoughts per day. Most are repetitive. Change the channel consciously.", "Fact: The 5-second rule (count down 5-4-3-2-1 and move) interrupts overthinking and activates your prefrontal cortex. Try it.", "Fact: After age 25, your brain loses about 1 gram of mass per year. But learning new skills builds new connections. Keep learning.", "Fact: The happiest people don't have the best circumstances. They have the best habits of attention.", "You will never be younger than you are right now. Act accordingly.", "Stop waiting for motivation. Create discipline. Motivation follows action, not the other way around.", "The only way to make sense out of change is to plunge into it, move with it, and join the dance. — Alan Watts", "Your time is limited, so don't waste it living someone else's life. — Steve Jobs", "If you don't design your own life plan, chances are you'll fall into someone else's plan. And guess what they have planned for you? Not much. — Jim Rohn", "The tragedy of life is not death, but what we let die inside of us while we live. — Norman Cousins", "It's not the years in your life that count. It's the life in your years. — Abraham Lincoln", "Life is what happens when you're busy making other plans. — John Lennon", "The secret of change is to focus all of your energy not on fighting the old, but on building the new. — Socrates", "Do not dwell in the past, do not dream of the future, concentrate the mind on the present moment. — Buddha", "The only thing we have to fear is fear itself. — Franklin D. Roosevelt", "You miss 100% of the shots you don't take. — Wayne Gretzky", "Whether you think you can or you think you can't, you're right. — Henry Ford", "The future depends on what you do today. — Mahatma Gandhi", "Act as if what you do makes a difference. It does. — William James", "In three words I can sum up everything I've learned about life: it goes on. — Robert Frost", "Life is either a daring adventure or nothing at all. — Helen Keller", "The purpose of our lives is to be happy. — Dalai Lama", "Get busy living or get busy dying. — Stephen King", "You only live once, but if you do it right, once is enough. — Mae West", "Life is really simple, but we insist on making it complicated. — Confucius", "It does not matter how slowly you go as long as you do not stop. — Confucius", "Our lives begin to end the day we become silent about things that matter. — Martin Luther King Jr.", "Life isn't about finding yourself. Life is about creating yourself. — George Bernard Shaw", "The greatest glory in living lies not in never falling, but in rising every time we fall. — Nelson Mandela", "In the end, it's not the years in your life that count. It's the life in your years. — Abraham Lincoln", "Life is a succession of moments. To live each one is to succeed. — Corita Kent", "The only limit to our realization of tomorrow is our doubts of today. — Franklin D. Roosevelt" ];
 
     // ---------- COLOR PALETTE (12 colors) ----------
     const COLOR_PALETTE = [
@@ -256,7 +153,6 @@
         { name: "Amber", code: "#f59e0b" }, { name: "Indigo", code: "#6366f1" }, { name: "White", code: "#ffffff" }
     ];
 
-    // Default zones (0-6 blue, 6-12 green, 12-18 yellow, 18-23 orange, 23-24 red)
     const DEFAULT_ZONES = [
         { start: 0, end: 6, colorCode: "#3b82f6", notice: "Dawn – fresh start" },
         { start: 6, end: 12, colorCode: "#22c55e", notice: "Morning – energy high" },
@@ -274,7 +170,6 @@
     const yearsSpan = document.getElementById('yearsNumber');
     const monthsSpan = document.getElementById('monthsNumber');
     const daysSpan = document.getElementById('daysNumber');
-    const hmsDisplay = document.getElementById('hmsDisplay');
     const dailyClockDisplay = document.getElementById('dailyClockDisplay');
     const dailyNotice = document.getElementById('dailyNotice');
     const lifeProgressBar = document.getElementById('lifeProgressBar');
@@ -294,14 +189,9 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- PERSISTENCE (extended to include colorZones) ----------
+    // ---------- PERSISTENCE (extended) ----------
     function saveAllSettings() {
-        const settings = {
-            birthYear: birthYearInput.value,
-            birthMonth: birthMonthSelect.value,
-            lifespan: lifespanInput.value,
-            colorZones: colorZones
-        };
+        const settings = { birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
         localStorage.setItem('hardTruthSettings', JSON.stringify(settings));
     }
 
@@ -317,7 +207,6 @@
                 else colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
             } catch(e) { console.warn(e); colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES)); }
         } else {
-            // First run: age 78, birth year = current year - 78, month January, lifespan 80
             const currentYear = new Date().getFullYear();
             birthYearInput.value = currentYear - 78;
             ageInput.value = 78;
@@ -329,7 +218,6 @@
         renderZonesList();
     }
 
-    // Sync functions
     function syncAgeFromBirth() {
         let year = parseInt(birthYearInput.value);
         let month = parseInt(birthMonthSelect.value);
@@ -356,7 +244,6 @@
         birthYearInput.value = birthYear;
     }
 
-    // Accurate calendar remaining components
     function getRemainingComponents(death, now) {
         if (now >= death) return { years:0, months:0, days:0, hours:0, minutes:0, seconds:0 };
         let years = death.getFullYear() - now.getFullYear();
@@ -374,7 +261,7 @@
         return { years, months, days, hours, minutes, seconds };
     }
 
-    // Lifetime clock update (years, months, days, HMS with color)
+    // Lifetime update (years, months, days, progress bar)
     function updateLifeClock() {
         if (!currentBirthDate || !deathDate) return;
         const now = new Date();
@@ -382,7 +269,6 @@
         yearsSpan.innerText = remaining.years;
         monthsSpan.innerText = remaining.months;
         daysSpan.innerText = remaining.days;
-        hmsDisplay.innerText = `${String(remaining.hours).padStart(2,'0')}:${String(remaining.minutes).padStart(2,'0')}:${String(remaining.seconds).padStart(2,'0')}`;
         const elapsedMs = now - currentBirthDate;
         let percentUsed = (elapsedMs / totalLifespanMs) * 100;
         if (percentUsed > 100) percentUsed = 100;
@@ -393,18 +279,17 @@
         let color = "#22c55e";
         if (percentRemaining < 25) color = "#ef4444";
         else if (percentRemaining < 50) color = "#eab308";
-        // Apply color to years, months, days and HMS (lifetime only)
-        [yearsSpan, monthsSpan, daysSpan, hmsDisplay].forEach(el => {
+        [yearsSpan, monthsSpan, daysSpan].forEach(el => {
             el.style.color = color;
             el.style.textShadow = `0 0 4px ${color}80`;
         });
-        if (remaining.years === 0 && remaining.months === 0 && remaining.days === 0 && remaining.hours === 0 && remaining.minutes === 0 && remaining.seconds === 0) {
-            yearsSpan.innerText = "0"; monthsSpan.innerText = "0"; daysSpan.innerText = "0"; hmsDisplay.innerText = "00:00:00";
+        if (remaining.years === 0 && remaining.months === 0 && remaining.days === 0) {
+            yearsSpan.innerText = "0"; monthsSpan.innerText = "0"; daysSpan.innerText = "0";
         }
-        updateDailyClock(); // update daily clock every second
+        updateDailyClock();
     }
 
-    // Daily clock based on configurable zones (by current hour)
+    // Daily clock with heartbeat and color based on zones
     function updateDailyClock() {
         const now = new Date();
         const midnight = new Date(now); midnight.setHours(24,0,0,0);
@@ -485,15 +370,7 @@
         attachZoneEvents();
     }
 
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m)); }
 
     function attachZoneEvents() {
         const rows = document.querySelectorAll('.zone-row');
@@ -503,7 +380,6 @@
             const noticeInput = row.querySelector('.zone-notice-input');
             const deleteBtn = row.querySelector('.delete-zone-btn');
             const radios = row.querySelectorAll('input[type="radio"]');
-            
             const updateZone = () => {
                 let newStart = parseInt(startInput.value);
                 let newEnd = parseInt(endInput.value);
@@ -513,15 +389,9 @@
                 newEnd = Math.min(24, Math.max(1, newEnd));
                 let selectedColor = colorZones[idx]?.colorCode || '#ffffff';
                 for (let r of radios) if (r.checked) { selectedColor = r.value; break; }
-                colorZones[idx] = {
-                    start: newStart,
-                    end: newEnd,
-                    colorCode: selectedColor,
-                    notice: noticeInput.value || ''
-                };
-                // sort zones by start hour
+                colorZones[idx] = { start: newStart, end: newEnd, colorCode: selectedColor, notice: noticeInput.value || '' };
                 colorZones.sort((a,b) => a.start - b.start);
-                renderZonesList(); // re-render to keep order
+                renderZonesList();
                 saveAllSettings();
                 updateDailyClock();
             };
@@ -555,16 +425,9 @@
     }
     resetZonesBtn.addEventListener('click', resetZonesToDefault);
 
-    // ---------- Import / Export ----------
+    // Import / Export
     function exportAllData() {
-        const exportObj = {
-            version: "2.0",
-            exportDate: new Date().toISOString(),
-            birthYear: birthYearInput.value,
-            birthMonth: birthMonthSelect.value,
-            lifespan: lifespanInput.value,
-            colorZones: colorZones
-        };
+        const exportObj = { version: "2.0", exportDate: new Date().toISOString(), birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:"application/json"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -584,11 +447,8 @@
                 if (imported.birthYear) birthYearInput.value = imported.birthYear;
                 if (imported.birthMonth) birthMonthSelect.value = imported.birthMonth;
                 if (imported.lifespan) lifespanInput.value = imported.lifespan;
-                if (imported.colorZones && Array.isArray(imported.colorZones) && imported.colorZones.length) {
-                    colorZones = imported.colorZones;
-                } else {
-                    colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
-                }
+                if (imported.colorZones && Array.isArray(imported.colorZones) && imported.colorZones.length) colorZones = imported.colorZones;
+                else colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
                 syncAgeFromBirth();
                 renderZonesList();
                 recalculateDates();
@@ -604,7 +464,7 @@
         importFileInput.value = '';
     });
 
-    // ---------- UI Helpers ----------
+    // Toggle settings panel
     function toggleSettings() {
         settingsPanel.classList.toggle('collapsed');
         const isCollapsed = settingsPanel.classList.contains('collapsed');
@@ -617,29 +477,15 @@
     function setRandomQuote() { quoteText.innerText = getRandomQuote(); }
     refreshQuoteBtn.addEventListener('click', setRandomQuote);
 
-    // Event listeners for birth/lifespan
     birthYearInput.addEventListener('input', () => { syncAgeFromBirth(); recalculateDates(); });
     ageInput.addEventListener('input', () => { syncBirthFromAge(); recalculateDates(); });
     birthMonthSelect.addEventListener('change', recalculateDates);
     lifespanInput.addEventListener('input', recalculateDates);
-    updateBtn.addEventListener('click', () => { 
-        recalculateDates(); 
-        setRandomQuote(); 
-        if (!settingsPanel.classList.contains('collapsed')) {
-            settingsPanel.classList.add('collapsed');
-            toggleIcon.className = 'fas fa-cog';
-            toggleTextSpan.innerText = 'Know Your Time Left';
-        }
-    });
+    updateBtn.addEventListener('click', () => { recalculateDates(); setRandomQuote(); if (!settingsPanel.classList.contains('collapsed')) toggleSettings(); });
 
     function startTicker() { if (updateInterval) clearInterval(updateInterval); updateInterval = setInterval(() => updateLifeClock(), 1000); }
 
-    function init() {
-        loadAllSettings();
-        recalculateDates();
-        setRandomQuote();
-        startTicker();
-    }
+    function init() { loadAllSettings(); recalculateDates(); setRandomQuote(); startTicker(); }
     init();
 
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.log('SW failed', err)); }
