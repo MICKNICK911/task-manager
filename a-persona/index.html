@@ -28,6 +28,7 @@
             opacity: 1;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            position: relative;
         }
         .toggle-panel.collapsed {
             max-height: 0;
@@ -75,6 +76,11 @@
         .dropdown-content button:hover, .dropdown-content label:hover { background-color: #374151; }
         .hidden-tool { display: none !important; }
         #zonesContainer { overflow: visible; max-height: none; }
+        /* Ensure inputs are clickable and not hidden */
+        .zone-start, .zone-end, .zone-notice-input {
+            pointer-events: auto;
+            touch-action: manipulation;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
@@ -228,21 +234,47 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // Smooth scroll to focused input
-    function scrollToFocusedInput(event) {
-        const target = event.target;
-        if (target.matches('input, textarea, select')) {
-            setTimeout(() => {
-                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        }
+    // ---------- SCROLL FIX FOR MOBILE ----------
+    function scrollInputIntoView(inputElement) {
+        // Wait for keyboard to open (300ms)
+        setTimeout(() => {
+            // Get the settings panel (scrollable container)
+            const panel = document.getElementById('settingsPanel');
+            if (!panel) return;
+            
+            // Calculate position relative to panel
+            const inputRect = inputElement.getBoundingClientRect();
+            const panelRect = panel.getBoundingClientRect();
+            
+            // If input is above or below the visible panel area, scroll it into view
+            if (inputRect.top < panelRect.top || inputRect.bottom > panelRect.bottom) {
+                // Calculate scroll offset - center the input in the panel
+                const scrollOffset = inputElement.offsetTop - (panel.clientHeight / 2) + (inputElement.clientHeight / 2);
+                panel.scrollTo({
+                    top: Math.max(0, scrollOffset),
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Also ensure the main window doesn't obscure anything
+            window.scrollTo({
+                top: Math.max(0, panel.offsetTop - 20),
+                behavior: 'smooth'
+            });
+        }, 300);
     }
 
-    function attachScrollToInputs() {
-        document.querySelectorAll('.zone-start, .zone-end, .zone-notice-input').forEach(input => {
-            input.removeEventListener('focus', scrollToFocusedInput);
-            input.addEventListener('focus', scrollToFocusedInput);
+    function attachScrollHandlers() {
+        const inputs = document.querySelectorAll('.zone-start, .zone-end, .zone-notice-input');
+        inputs.forEach(input => {
+            // Remove existing listener to avoid duplicates
+            input.removeEventListener('focus', handleFocus);
+            input.addEventListener('focus', handleFocus);
         });
+    }
+    
+    function handleFocus(event) {
+        scrollInputIntoView(event.target);
     }
 
     // Dropdown logic
@@ -435,7 +467,7 @@
             zonesContainer.appendChild(div);
         });
         attachZoneEvents();
-        attachScrollToInputs();
+        attachScrollHandlers();
     }
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m)); }
