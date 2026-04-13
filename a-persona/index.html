@@ -22,17 +22,12 @@
         .progress-bar { transition: width 0.5s ease; }
         input, select { background-color: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
         input:focus, select:focus { outline: none; border-color: #f59e0b; }
+        /* Remove scrollable container – let the page scroll naturally */
         .toggle-panel {
             transition: max-height 0.4s ease-out, opacity 0.3s ease, padding 0.2s, margin 0.2s;
             max-height: 800px;
             opacity: 1;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        /* When panel is open on mobile, allow full expansion */
-        .toggle-panel:not(.collapsed) {
-            max-height: none;
-            overflow-y: visible;
+            overflow: visible; /* no internal scroll */
         }
         .toggle-panel.collapsed {
             max-height: 0;
@@ -41,6 +36,11 @@
             margin: 0 !important;
             border: none !important;
             overflow: hidden;
+        }
+        /* When open, no height restriction */
+        .toggle-panel:not(.collapsed) {
+            max-height: none;
+            overflow: visible;
         }
         .color-radio-group { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
         .color-radio-group label { display: inline-flex; align-items: center; gap: 0.2rem; font-size: 0.7rem; cursor: pointer; }
@@ -80,16 +80,9 @@
         .dropdown-content button:hover, .dropdown-content label:hover { background-color: #374151; }
         .hidden-tool { display: none !important; }
         #zonesContainer { overflow: visible; max-height: none; }
-        /* Ensure inputs are easy to tap */
-        .zone-start, .zone-end, .zone-notice-input {
-            pointer-events: auto;
-            touch-action: manipulation;
-            scroll-margin-top: 100px;
-            scroll-margin-bottom: 100px;
-        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4 flex items-center justify-center">
+<body class="bg-gradient-to-br from-gray-900 via-slate-800 to-gray-900 min-h-screen p-4">
 
 <div class="max-w-4xl w-full mx-auto">
     <div class="bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 p-6 md:p-8">
@@ -240,39 +233,43 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- FIXED SCROLL FOR MOBILE (works on all inputs) ----------
-    function scrollToInputSmoothly(inputElement) {
+    // ---------- COMPLETELY NEW SCROLL HANDLER ----------
+    // This function will be called when any zone input receives focus.
+    // It waits for the keyboard to open (using multiple attempts) and then scrolls the input into the center of the viewport.
+    let scrollTimeout = null;
+    function scrollInputToCenter(inputElement) {
         if (!inputElement) return;
-        // Small delay to let keyboard start opening
-        setTimeout(() => {
-            // Use native scrollIntoView with smooth behavior and margin
+        // Clear any previous pending scroll
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        // Use a short delay first, then a longer one to ensure keyboard is fully open
+        const attemptScroll = () => {
             inputElement.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center',
                 inline: 'nearest'
             });
-        }, 100);
+        };
+        // First attempt after 100ms (keyboard starts opening)
+        setTimeout(attemptScroll, 100);
+        // Second attempt after 350ms (keyboard fully open)
+        scrollTimeout = setTimeout(attemptScroll, 350);
+        // Also listen for window resize (keyboard changes viewport height)
+        const onResize = () => {
+            attemptScroll();
+            window.removeEventListener('resize', onResize);
+        };
+        window.addEventListener('resize', onResize, { once: true });
     }
 
-    // Also listen for window resize (keyboard open/close) and re-scroll to focused element
-    let lastFocusedInput = null;
-    function onFocusHandler(event) {
-        lastFocusedInput = event.target;
-        scrollToInputSmoothly(event.target);
-    }
-    function onResizeHandler() {
-        if (lastFocusedInput && document.activeElement === lastFocusedInput) {
-            scrollToInputSmoothly(lastFocusedInput);
-        }
-    }
-    window.addEventListener('resize', onResizeHandler);
-
-    function attachScrollHandlers() {
+    function attachFocusHandlers() {
         const inputs = document.querySelectorAll('.zone-start, .zone-end, .zone-notice-input');
         inputs.forEach(input => {
-            input.removeEventListener('focus', onFocusHandler);
-            input.addEventListener('focus', onFocusHandler);
+            input.removeEventListener('focus', focusHandler);
+            input.addEventListener('focus', focusHandler);
         });
+    }
+    function focusHandler(event) {
+        scrollInputToCenter(event.target);
     }
 
     // Dropdown logic
@@ -465,7 +462,7 @@
             zonesContainer.appendChild(div);
         });
         attachZoneEvents();
-        attachScrollHandlers();
+        attachFocusHandlers(); // attach focus handlers to the new inputs
     }
 
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m)); }
@@ -572,10 +569,6 @@
             dropdownContent.classList.remove('show');
         } else {
             toolsRow.classList.remove('hidden-tool');
-            // Small delay to ensure panel is open before focusing
-            setTimeout(() => {
-                if (lastFocusedInput) scrollToInputSmoothly(lastFocusedInput);
-            }, 50);
         }
     }
     toggleSettingsBtn.addEventListener('click', toggleSettings);
