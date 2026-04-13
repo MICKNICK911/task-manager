@@ -59,23 +59,25 @@
         <div class="text-center mb-6">
             <div class="inline-flex items-center justify-center bg-red-500/20 rounded-full px-4 py-1.5 mb-3 border border-red-400/40">
                 <i class="fas fa-hourglass-end text-red-300 mr-2 text-sm"></i>
-                <span class="text-red-300 text-xs font-bold tracking-wider">TRUTH · YOU WILL DIE ONE DAY</span>
+                <span class="text-red-300 text-xs font-bold tracking-wider">HARD TRUTH · YOU WILL DIE ONE DAY</span>
             </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-white">Hard Truth</h1>
+            <p class="text-gray-300 text-sm mt-1">you will die one day. use your time wisely.</p>
         </div>
 
         <!-- Toggle button for settings -->
         <div class="flex justify-center mb-3">
             <button id="toggleSettingsBtn" class="bg-white/10 hover:bg-white/20 text-gray-200 px-5 py-2 rounded-full transition flex items-center gap-2 text-sm font-medium border border-white/20">
                 <i class="fas fa-cog" id="toggleIcon"></i>
-                <span id="toggleText">Know Your Time Left</span>
+                <span id="toggleText">show settings</span>
             </button>
         </div>
 
         <!-- COLLAPSIBLE SETTINGS PANEL -->
         <div id="settingsPanel" class="toggle-panel collapsed bg-black/30 rounded-2xl p-5 mb-6 border border-white/10">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                <div><label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">year of birth</label><input type="number" id="birthYearInput" value="1947" min="1900" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm"></div>
-                <div><label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">or current age (years)</label><input type="number" id="ageInput" value="79" min="0" max="120" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm"></div>
+                <div><label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">year of birth</label><input type="number" id="birthYearInput" value="1948" min="1900" max="2026" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm"></div>
+                <div><label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">or current age (years)</label><input type="number" id="ageInput" value="78" min="0" max="120" step="1" class="w-full rounded-xl px-3 py-2 text-white text-sm"></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div><label class="text-gray-300 text-xs uppercase tracking-wider block mb-1">month of birth</label><select id="birthMonthSelect" class="w-full rounded-xl px-3 py-2 text-white text-sm"><option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option><option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option><option value="8">September</option><option value="9">October</option><option value="10">November</option><option value="11">December</option></select><p class="text-gray-500 text-[10px] mt-1">day is always the 1st</p></div>
@@ -300,8 +302,14 @@
                 if (settings.birthMonth) birthMonthSelect.value = settings.birthMonth;
                 if (settings.lifespan) lifespanInput.value = settings.lifespan;
             } catch(e) { console.warn("Failed to load settings"); }
+        } else {
+            // Default: age 78, birth year = current year - 78, month January (0)
+            const currentYear = new Date().getFullYear();
+            birthYearInput.value = currentYear - 78;
+            ageInput.value = 78;
+            birthMonthSelect.value = "0"; // January
+            lifespanInput.value = 80;
         }
-        // Also sync age from birth year
         syncAgeFromBirth();
     }
 
@@ -317,7 +325,7 @@
     function syncAgeFromBirth() {
         let year = parseInt(birthYearInput.value);
         let month = parseInt(birthMonthSelect.value);
-        if (isNaN(year)) year = 1996;
+        if (isNaN(year)) year = new Date().getFullYear() - 78;
         let birth = new Date(year, month, 1);
         let today = new Date();
         let age = today.getFullYear() - birth.getFullYear();
@@ -330,7 +338,7 @@
     function syncBirthFromAge() {
         let age = parseInt(ageInput.value);
         let month = parseInt(birthMonthSelect.value);
-        if (isNaN(age)) age = 30;
+        if (isNaN(age)) age = 78;
         let today = new Date();
         let birthYear = today.getFullYear() - age;
         let testBirth = new Date(birthYear, month, 1);
@@ -384,14 +392,13 @@
             yearsSpan.innerText = "0"; monthsSpan.innerText = "0"; daysSpan.innerText = "0";
             hmsDisplay.innerHTML = "00:00:00";
         }
-        toggleSettings();
     }
 
     function recalculateDates() {
         let birthYear = parseInt(birthYearInput.value);
         let monthIndex = parseInt(birthMonthSelect.value);
         let lifespan = parseInt(lifespanInput.value);
-        if (isNaN(birthYear)) birthYear = 1996;
+        if (isNaN(birthYear)) birthYear = new Date().getFullYear() - 78;
         if (isNaN(lifespan)) lifespan = 80;
         currentBirthDate = new Date(birthYear, monthIndex, 1, 0, 0, 0, 0);
         deathDate = new Date(birthYear + lifespan, monthIndex, 1, 0, 0, 0, 0);
@@ -402,7 +409,7 @@
         if (m < 0 || (m === 0 && today.getDate() < currentBirthDate.getDate())) age--;
         ageInput.value = age >= 0 ? age : 0;
         updateLifeClock();
-        saveSettings(); // persist after recalc
+        saveSettings();
     }
 
     function getRandomQuote() { return QUOTES[Math.floor(Math.random() * QUOTES.length)]; }
@@ -415,12 +422,21 @@
     ageInput.addEventListener('input', () => { syncBirthFromAge(); recalculateDates(); });
     birthMonthSelect.addEventListener('change', recalculateDates);
     lifespanInput.addEventListener('input', recalculateDates);
-    updateBtn.addEventListener('click', () => { recalculateDates(); setRandomQuote(); });
+    updateBtn.addEventListener('click', () => { 
+        recalculateDates(); 
+        setRandomQuote(); 
+        // Auto-close settings panel
+        if (!settingsPanel.classList.contains('collapsed')) {
+            settingsPanel.classList.add('collapsed');
+            toggleIcon.className = 'fas fa-cog';
+            toggleTextSpan.innerText = 'show settings';
+        }
+    });
     refreshQuoteBtn.addEventListener('click', setRandomQuote);
 
     function init() {
-        loadSettings();  // Load saved settings first
-        recalculateDates(); // This will also save settings if any changed
+        loadSettings();  // Load saved settings or defaults (age 78)
+        recalculateDates();
         setRandomQuote();
         startTicker();
     }
