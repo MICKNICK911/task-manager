@@ -63,7 +63,7 @@
             <!-- Color zones configuration -->
             <div class="border-t border-white/20 pt-4 mt-2">
                 <div class="flex justify-between items-center mb-2">
-                    <label class="text-amber-300 text-xs uppercase tracking-wider flex items-center gap-1"><i class="fas fa-palette"></i> daily clock color zones</label>
+                    <label class="text-amber-300 text-xs uppercase tracking-wider flex items-center gap-1"><i class="fas fa-palette"></i> daily clock color zones (by hour of day)</label>
                     <button id="addZoneBtn" class="bg-amber-600/70 hover:bg-amber-500 text-white text-xs px-2 py-1 rounded-full"><i class="fas fa-plus"></i> add zone</button>
                 </div>
                 <div id="zonesContainer" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
@@ -177,8 +177,14 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
+    // ---------- Persistence ----------
     function saveAllSettings() {
-        const settings = { birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
+        const settings = {
+            birthYear: birthYearInput.value,
+            birthMonth: birthMonthSelect.value,
+            lifespan: lifespanInput.value,
+            colorZones: colorZones
+        };
         localStorage.setItem('hardTruthSettings', JSON.stringify(settings));
     }
 
@@ -192,8 +198,9 @@
                 if (s.lifespan) lifespanInput.value = s.lifespan;
                 if (s.colorZones && Array.isArray(s.colorZones) && s.colorZones.length) colorZones = s.colorZones;
                 else colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
-            } catch(e) { colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES)); }
+            } catch(e) { console.warn(e); colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES)); }
         } else {
+            // First run: age 78, birth year = current year - 78, month January, lifespan 80
             const currentYear = new Date().getFullYear();
             birthYearInput.value = currentYear - 78;
             ageInput.value = 78;
@@ -231,6 +238,7 @@
         birthYearInput.value = birthYear;
     }
 
+    // Lifetime remaining components (accurate calendar)
     function getRemainingComponents(death, now) {
         if (now >= death) return { years:0, months:0, days:0, hours:0, minutes:0, seconds:0 };
         let years = death.getFullYear() - now.getFullYear();
@@ -276,6 +284,7 @@
         updateDailyClock();
     }
 
+    // Daily clock based on configurable zones (by current hour)
     function updateDailyClock() {
         const now = new Date();
         const midnight = new Date(now); midnight.setHours(24,0,0,0);
@@ -286,6 +295,7 @@
         const minutes = Math.floor((totalSecs % 3600) / 60);
         const seconds = totalSecs % 60;
         dailyClockDisplay.innerText = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        
         const currentHour = now.getHours();
         let activeZone = colorZones.find(z => currentHour >= z.start && currentHour < z.end);
         if (!activeZone && colorZones.length) activeZone = colorZones[0];
@@ -318,6 +328,7 @@
         saveAllSettings();
     }
 
+    // ---------- Color Zones UI ----------
     function renderZonesList() {
         zonesContainer.innerHTML = '';
         colorZones.forEach((zone, idx) => {
@@ -354,7 +365,15 @@
         attachZoneEvents();
     }
 
-    function escapeHtml(str) { return str.replace(/[&<>]/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m] || m)); }
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
 
     function attachZoneEvents() {
         const rows = document.querySelectorAll('.zone-row');
@@ -364,6 +383,7 @@
             const noticeInput = row.querySelector('.zone-notice-input');
             const deleteBtn = row.querySelector('.delete-zone-btn');
             const radios = row.querySelectorAll('input[type="radio"]');
+            
             const updateZone = () => {
                 let newStart = parseInt(startInput.value);
                 let newEnd = parseInt(endInput.value);
@@ -373,9 +393,15 @@
                 newEnd = Math.min(24, Math.max(1, newEnd));
                 let selectedColor = colorZones[idx]?.colorCode || '#ffffff';
                 for (let r of radios) if (r.checked) { selectedColor = r.value; break; }
-                colorZones[idx] = { start: newStart, end: newEnd, colorCode: selectedColor, notice: noticeInput.value || '' };
+                colorZones[idx] = {
+                    start: newStart,
+                    end: newEnd,
+                    colorCode: selectedColor,
+                    notice: noticeInput.value || ''
+                };
+                // sort zones by start hour
                 colorZones.sort((a,b) => a.start - b.start);
-                renderZonesList();
+                renderZonesList(); // re-render to keep order
                 saveAllSettings();
                 updateDailyClock();
             };
@@ -409,8 +435,16 @@
     }
     resetZonesBtn.addEventListener('click', resetZonesToDefault);
 
+    // ---------- Import / Export ----------
     function exportAllData() {
-        const exportObj = { version: "2.0", exportDate: new Date().toISOString(), birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
+        const exportObj = {
+            version: "2.0",
+            exportDate: new Date().toISOString(),
+            birthYear: birthYearInput.value,
+            birthMonth: birthMonthSelect.value,
+            lifespan: lifespanInput.value,
+            colorZones: colorZones
+        };
         const blob = new Blob([JSON.stringify(exportObj, null, 2)], {type:"application/json"});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -430,8 +464,11 @@
                 if (imported.birthYear) birthYearInput.value = imported.birthYear;
                 if (imported.birthMonth) birthMonthSelect.value = imported.birthMonth;
                 if (imported.lifespan) lifespanInput.value = imported.lifespan;
-                if (imported.colorZones && Array.isArray(imported.colorZones) && imported.colorZones.length) colorZones = imported.colorZones;
-                else colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
+                if (imported.colorZones && Array.isArray(imported.colorZones) && imported.colorZones.length) {
+                    colorZones = imported.colorZones;
+                } else {
+                    colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
+                }
                 syncAgeFromBirth();
                 renderZonesList();
                 recalculateDates();
@@ -447,6 +484,7 @@
         importFileInput.value = '';
     });
 
+    // ---------- UI Helpers ----------
     function toggleSettings() {
         settingsPanel.classList.toggle('collapsed');
         const isCollapsed = settingsPanel.classList.contains('collapsed');
@@ -459,6 +497,7 @@
     function setRandomQuote() { quoteText.innerText = getRandomQuote(); }
     refreshQuoteBtn.addEventListener('click', setRandomQuote);
 
+    // Event listeners for birth/lifespan
     birthYearInput.addEventListener('input', () => { syncAgeFromBirth(); recalculateDates(); });
     ageInput.addEventListener('input', () => { syncBirthFromAge(); recalculateDates(); });
     birthMonthSelect.addEventListener('change', recalculateDates);
