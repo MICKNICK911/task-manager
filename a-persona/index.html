@@ -228,35 +228,27 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- SCROLL FIX: ensure focused input is visible inside settings panel ----------
+    // ---------- FIXED SCROLL: only once, without smooth animation, no resize listener ----------
     function scrollToMakeVisible(inputElement) {
         if (!inputElement || !settingsPanel) return;
-        // Get the panel's scrollable area
+        // Get the panel's scrollable area and the input's position relative to the panel
         const panelRect = settingsPanel.getBoundingClientRect();
         const inputRect = inputElement.getBoundingClientRect();
         // Check if input is outside the visible area of the panel
         const isAbove = inputRect.top < panelRect.top;
         const isBelow = inputRect.bottom > panelRect.bottom;
         if (isAbove || isBelow) {
-            // Calculate how much to scroll
-            const scrollOffset = inputElement.offsetTop - (settingsPanel.clientHeight / 2) + (inputElement.clientHeight / 2);
-            settingsPanel.scrollTo({
-                top: Math.max(0, scrollOffset),
-                behavior: 'smooth'
-            });
+            // Calculate how much to scroll – we want the input to be near the top but with a small offset
+            const scrollOffset = inputElement.offsetTop - 60; // 60px padding from top
+            settingsPanel.scrollTop = Math.max(0, scrollOffset);
         }
     }
 
     function handleFocus(event) {
         const input = event.target;
-        // Small delay to allow any layout changes (especially mobile keyboard)
-        setTimeout(() => scrollToMakeVisible(input), 100);
-        // Also on window resize (keyboard open) re-scroll
-        const onResize = () => {
-            scrollToMakeVisible(input);
-            window.removeEventListener('resize', onResize);
-        };
-        window.addEventListener('resize', onResize, { once: true });
+        // Small delay to allow the browser to complete focusing (especially on mobile)
+        setTimeout(() => scrollToMakeVisible(input), 80);
+        // No resize listener – it causes the keyboard to dismiss on some devices
     }
 
     function attachFocusHandlers() {
