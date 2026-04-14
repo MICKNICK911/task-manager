@@ -228,27 +228,21 @@
     let currentBirthDate = null, deathDate = null, totalLifespanMs = 0, updateInterval = null;
     let colorZones = [];
 
-    // ---------- FIXED SCROLL: only once, without smooth animation, no resize listener ----------
+    // ---------- SCROLL HELPERS ----------
     function scrollToMakeVisible(inputElement) {
         if (!inputElement || !settingsPanel) return;
-        // Get the panel's scrollable area and the input's position relative to the panel
         const panelRect = settingsPanel.getBoundingClientRect();
         const inputRect = inputElement.getBoundingClientRect();
-        // Check if input is outside the visible area of the panel
         const isAbove = inputRect.top < panelRect.top;
         const isBelow = inputRect.bottom > panelRect.bottom;
         if (isAbove || isBelow) {
-            // Calculate how much to scroll – we want the input to be near the top but with a small offset
-            const scrollOffset = inputElement.offsetTop - 60; // 60px padding from top
+            const scrollOffset = inputElement.offsetTop - 60;
             settingsPanel.scrollTop = Math.max(0, scrollOffset);
         }
     }
 
     function handleFocus(event) {
-        const input = event.target;
-        // Small delay to allow the browser to complete focusing (especially on mobile)
-        setTimeout(() => scrollToMakeVisible(input), 80);
-        // No resize listener – it causes the keyboard to dismiss on some devices
+        setTimeout(() => scrollToMakeVisible(event.target), 80);
     }
 
     function attachFocusHandlers() {
@@ -259,7 +253,7 @@
         });
     }
 
-    // Dropdown logic
+    // ---------- DROPDOWN ----------
     function toggleDropdown(e) {
         e.stopPropagation();
         dropdownContent.classList.toggle('show');
@@ -274,6 +268,7 @@
         document.addEventListener('click', closeDropdownOnClickOutside);
     }
 
+    // ---------- PERSISTENCE ----------
     function saveAllSettings() {
         const settings = { birthYear: birthYearInput.value, birthMonth: birthMonthSelect.value, lifespan: lifespanInput.value, colorZones: colorZones };
         localStorage.setItem('hardTruthSettings', JSON.stringify(settings));
@@ -328,6 +323,7 @@
         birthYearInput.value = birthYear;
     }
 
+    // ---------- LIFETIME CLOCK ----------
     function getRemainingComponents(death, now) {
         if (now >= death) return { years:0, months:0, days:0, hours:0, minutes:0, seconds:0 };
         let years = death.getFullYear() - now.getFullYear();
@@ -415,6 +411,7 @@
         saveAllSettings();
     }
 
+    // ---------- COLOR ZONES UI (WITHOUT RE‑RENDERING ON NOTICE INPUT) ----------
     function renderZonesList() {
         zonesContainer.innerHTML = '';
         colorZones.forEach((zone, idx) => {
@@ -462,6 +459,8 @@
             const noticeInput = row.querySelector('.zone-notice-input');
             const deleteBtn = row.querySelector('.delete-zone-btn');
             const radios = row.querySelectorAll('input[type="radio"]');
+            
+            // For start/end hours: re-render after change (because sorting may be needed)
             const updateZone = () => {
                 let newStart = parseInt(startInput.value);
                 let newEnd = parseInt(endInput.value);
@@ -477,10 +476,18 @@
                 saveAllSettings();
                 updateDailyClock();
             };
+            
             startInput.addEventListener('change', updateZone);
             endInput.addEventListener('change', updateZone);
-            noticeInput.addEventListener('input', updateZone);
             radios.forEach(r => r.addEventListener('change', updateZone));
+            
+            // For notice field: update data and save, but do NOT re-render (keeps focus)
+            noticeInput.addEventListener('input', () => {
+                colorZones[idx].notice = noticeInput.value;
+                saveAllSettings();
+                updateDailyClock();  // update the notice display under daily clock
+            });
+            
             deleteBtn.addEventListener('click', () => {
                 colorZones.splice(idx, 1);
                 if (colorZones.length === 0) colorZones = JSON.parse(JSON.stringify(DEFAULT_ZONES));
