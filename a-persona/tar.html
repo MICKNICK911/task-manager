@@ -2,10 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Clarity Compass · Color Zones + Celebration</title>
+    
+    <!-- ===== PWA: SHARED WITH FIRST APP ===== -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e1b2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Hard Truth">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23ef4444'/%3E%3Ctext x='50' y='67' text-anchor='middle' fill='white' font-size='50' font-family='monospace'%3E⏳%3C/text%3E%3C/svg%3E">
+    <!-- ====================================== -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -390,22 +400,20 @@
         }
         
         // ========== COLOR LOGIC ==========
-        // Corrected days color
-function getDaysColor(daysLeft, totalDays) {
-    if (totalDays <= 0) return '#fbbf24';
-    const fraction = daysLeft / totalDays;
-    if (fraction > 2/3) return '#ef4444'; // red: first 1/3 of journey
-    if (fraction > 1/3) return '#eab308'; // yellow: middle 1/3
-    return '#22c55e'; // green: final 1/3
-}
+        function getDaysColor(daysLeft, totalDays) {
+            if (totalDays <= 0) return '#fbbf24';
+            const fraction = daysLeft / totalDays;
+            if (fraction > 2/3) return '#ef4444';
+            if (fraction > 1/3) return '#eab308';
+            return '#22c55e';
+        }
 
-// Corrected clock color (based on remaining seconds)
-function getClockColor(secondsLeftToday) {
-    if (secondsLeftToday > 16 * 3600) return '#ef4444'; // red: first 8h of day
-    if (secondsLeftToday > 8 * 3600) return '#eab308';  // yellow: next 8h
-    if (secondsLeftToday > 3600) return '#22c55e';      // green: next 7h
-    return '#ffffff'; // white: last hour
-}
+        function getClockColor(secondsLeftToday) {
+            if (secondsLeftToday > 16 * 3600) return '#ef4444';
+            if (secondsLeftToday > 8 * 3600) return '#eab308';
+            if (secondsLeftToday > 3600) return '#22c55e';
+            return '#ffffff';
+        }
         
         function updateDaysColor() {
             const endStr = endDateInput.value;
@@ -444,7 +452,6 @@ function getClockColor(secondsLeftToday) {
             dailyClockSpan.style.textShadow = `0 0 8px ${color}80`;
             dailyClockSpan.innerText = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
             
-            // Trigger celebration when hitting exactly 00:00:00 (just once per day)
             if (totalSecs === 0 && lastSecondTrigger !== 0) {
                 lastSecondTrigger = 0;
                 showCelebration();
@@ -544,6 +551,11 @@ function getClockColor(secondsLeftToday) {
             resizeCanvas();
         }
         init();
+
+        // ===== PWA: SHARED SERVICE WORKER REGISTRATION (same as first app) =====
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered (Clarity Compass)', reg)).catch(err => console.log('SW registration failed', err));
+        }
     </script>
 </body>
 </html>
