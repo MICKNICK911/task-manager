@@ -1,7 +1,7 @@
 const CACHE_NAME = 'clarity-compass-v1';
 const urlsToCache = [
   './',                    // current directory index (your HTML file)
-  './tar.html' // adjust filename if yours is different
+  './resetapp/tar.html' // adjust filename if yours is different
 ];
 
 // Install event – cache core assets
