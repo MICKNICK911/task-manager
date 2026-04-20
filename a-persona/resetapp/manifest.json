@@ -1,8 +1,9 @@
 {
   "name": "Clarity Compass",
   "short_name": "Clarity",
-  "description": "A private tool for reset, focus & self-respect – countdown to your goal with daily wisdom.",
-  "start_url": ".",
+  "description": "Reset, focus & self-respect – countdown to your goal with daily wisdom.",
+  "start_url": "./tar.html",
+  "scope": "/resetapp/",
   "display": "standalone",
   "theme_color": "#1e1b2e",
   "background_color": "#0f172a",
